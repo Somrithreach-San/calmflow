@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calm Flow</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      href="{{ url_for('static', filename='icons/favicon.png') }}"
+    />
+  </head>
+  <body>
+    <div class="site-container">
+      <header class="site-header">
+        <div class="header-container">
+          <a href="/" class="logo">Calm Flow</a>
+          <div class="volume-control-container">
+            <img
+              id="volume-icon"
+              src="/static/icons/volume.png"
+              alt="Volume"
+              class="global-volume-icon"
+            />
+            <input
+              id="global-volume-slider"
+              class="volume-slider global-slider hidden"
+              type="range"
+              min="0"
+              max="100"
+              value="50"
+            />
+          </div>
+        </div>
+      </header>
+
+      <main class="main-content">
+        <section class="playlists-section">
+          <div class="playlists-header">
+            <h2 class="section-title">Playlists</h2>
+          </div>
+          <div class="carousel-wrapper">
+            <button id="scroll-left" class="arrow-btn">&lt;</button>
+            <div class="playlist-carousel-container">
+              <div class="playlist-carousel">
+                <div class="playlist-grid">
+                  {% for group in groups %}
+                  <a href="#" class="playlist-card" data-group="{{ group.id }}">
+                    <div class="playlist-icon">
+                      <img
+                        src="{{ url_for('static', filename=group.playlist_icon.split('static/')[1]) }}"
+                        alt="{{ group.name }} Icon"
+                        class="icon-img"
+                      />
+                    </div>
+                    <h3 class="playlist-title">{{ group.name }}</h3>
+                  </a>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+            <button id="scroll-right" class="arrow-btn">&gt;</button>
+          </div>
+        </section>
+
+        <section class="sounds-section">
+          <div class="sounds-header">
+            <h2 class="section-title">Sounds</h2>
+            <button class="action-button clear">Clear Playing</button>
+          </div>
+          <div class="sound-buttons-grid">
+            {% for sound in sounds %}
+            <div
+              class="sound-button-container"
+              data-sound-name="{{ sound['name'] }}"
+              data-group="{{ sound['groups'] | join(' ') }}"
+            >
+              <button class="sound-button">
+                <img
+                  src="{{ url_for('static', filename=sound['icon'].split('static/')[1]) }}"
+                  alt="{{ sound['display_name'] }}"
+                  class="sound-icon"
+                />
+                <p class="sound-name">{{ sound['display_name'] }}</p>
+              </button>
+              <div class="volume-control hidden">
+                <input
+                  type="range"
+                  class="volume-slider"
+                  min="0"
+                  max="100"
+                  value="50"
+                />
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <p>&copy; Calm Flow. All Rights Reserved.</p>
+      </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+  </body>
+</html>
