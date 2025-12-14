@@ -4,7 +4,7 @@
   --background-secondary: #ffffff; /* White for all buttons */
   --text-primary: #212529; /* Dark primary text */
   --text-on-accent: #181a1b;
-  --accent-color: #b3cee5; /* Minty green for accent */
+  --accent-color: #ffffff; /* Minty green for accent */
   --shadow-color: #0d2438; /* Dark blue from example */
   --border-color: #0d2438; /* Dark blue for Neubrutalism */
   --border-color-light: #dee2e6; /* Light grey for other borders */
@@ -124,6 +124,7 @@ body {
   justify-content: center;
   align-items: center;
   flex-shrink: 0; /* Prevent cards from shrinking */
+  scroll-snap-align: start;
 }
 
 /* Action button specific styles */
@@ -138,7 +139,7 @@ body {
 .arrow-btn:hover {
   transform: translateY(-2px) translateX(-2px);
   box-shadow: 6px 6px 0px 0px var(--shadow-color);
-  background-color: #b3cee5; /* Same hover color for all */
+  background-color: #ffffff; /* Same hover color for all */
   color: var(--text-on-accent);
 }
 
@@ -228,14 +229,13 @@ body {
 /* --- GRIDS --- */
 .playlist-grid {
   display: flex; /* Use flex for better control */
-  gap: 1.5rem; /* Increased gap for better spacing */
-  padding: 10px 15px; /* Slightly decreased padding */
-  width: 100%;
+  gap: 24px; /* Increased gap for better spacing */
+  padding: 10px 0; /* Centering fix */
 }
 
 /* Show only 3 cards - container with adjusted width */
 .playlist-carousel-container {
-  width: 750px; /* Slightly decreased from 800px */
+  width: 688px; /* Perfectly sized for 3 cards */
   overflow: hidden;
   position: relative;
   /* Remove any mask/fade effects */
@@ -247,11 +247,13 @@ body {
   overflow-x: auto;
   -ms-overflow-style: none;
   scrollbar-width: none;
-  padding: 10px 5px;
+  padding: 10px 20px; /* Centering fix */
   width: 100%;
   /* Ensure no overflow hint */
   mask-image: none;
   -webkit-mask-image: none;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: 20px; /* Centering fix */
 }
 .playlist-carousel::-webkit-scrollbar {
   display: none;
@@ -271,9 +273,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem; /* Slightly decreased from 1rem */
+  gap: 12px; /* Slightly decreased from 1rem */
   position: relative;
-  width: 100%;
 }
 
 /* Arrow buttons - positioned further away */
@@ -296,7 +297,7 @@ body {
 
 /* --- VOLUME CONTROLS --- */
 .volume-control {
-  width: 80%;
+  width: 90%;
   margin: 0.5rem auto 0;
   height: 20px;
   opacity: 0;
@@ -308,7 +309,7 @@ body {
   visibility: visible;
 }
 
-/* Volume slider for active sounds - main color theme */
+/* Volume slider for active sounds */
 .volume-slider {
   -webkit-appearance: none;
   appearance: none;
@@ -317,24 +318,75 @@ body {
   background: var(--border-color-light);
   border-radius: 3px;
   outline: none;
+  position: relative;
 }
+
+/* The slider track - neubrutalism border */
+.volume-slider::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border: 2px solid var(--border-color);
+  border-radius: 5px;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Slider thumb - neubrutalism styling */
 .volume-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
-  background: var(--accent-color); /* Changed to accent color */
+  width: 20px;
+  height: 20px;
+  background: var(--background-secondary); /* White background */
+  border: 2px solid var(--border-color); /* Dark blue border */
   border-radius: 50%;
   cursor: pointer;
-  border: 2px solid var(--border-color); /* Add border for definition */
+  box-shadow: 2px 2px 0px 0px var(--shadow-color);
+  transition: all 0.15s ease;
+  position: relative;
 }
+
+/* Hover effect for thumb */
+.volume-slider::-webkit-slider-thumb:hover {
+  background: var(--accent-color); /* Mint green on hover */
+  transform: translateY(-1px) translateX(-1px);
+  box-shadow: 3px 3px 0px 0px var(--shadow-color);
+}
+
+/* Active state for thumb */
+.volume-slider::-webkit-slider-thumb:active {
+  transform: translateY(1px) translateX(1px);
+  box-shadow: 1px 1px 0px 0px var(--shadow-color);
+}
+
+/* Firefox styles */
 .volume-slider::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
-  background: var(--accent-color); /* Changed to accent color */
+  width: 20px;
+  height: 20px;
+  background: var(--background-secondary); /* White background */
+  border: 2px solid var(--border-color); /* Dark blue border */
   border-radius: 50%;
   cursor: pointer;
-  border: 2px solid var(--border-color); /* Add border for definition */
+  box-shadow: 2px 2px 0px 0px var(--shadow-color);
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+/* Hover effect for Firefox */
+.volume-slider::-moz-range-thumb:hover {
+  background: var(--accent-color); /* Mint green on hover */
+  transform: translateY(-1px) translateX(-1px);
+  box-shadow: 3px 3px 0px 0px var(--shadow-color);
+}
+
+/* Active state for Firefox */
+.volume-slider::-moz-range-thumb:active {
+  transform: translateY(1px) translateX(1px);
+  box-shadow: 1px 1px 0px 0px var(--shadow-color);
 }
 
 /* --- FOOTER & VOLUME CONTROLS --- */
@@ -344,10 +396,11 @@ body {
   margin-top: 2rem;
   border-top: 1px solid var(--border-color-light);
   color: var(--text-secondary);
-  font-size: 1.1rem; /* Increased font size from 0.9rem */
+  font-size: 1.3rem; /* Increased font size from 0.9rem */
   font-family: "Aristotelica Display Trial", "Inter", sans-serif; /* Same font as rest of site */
-  font-weight: 400; /* Regular weight for footer */
+  font-weight: 600; /* Regular weight for footer */
 }
+
 .volume-control-container {
   display: flex;
   align-items: center;
@@ -375,4 +428,52 @@ body {
   display: block !important; /* Override hidden class */
   opacity: 1 !important;
   visibility: visible !important;
+}
+
+/* --- PREMIUM SOUNDS --- */
+.sound-button-container.premium {
+  position: relative;
+}
+
+.sound-button-container.premium .sound-icon {
+  opacity: 0.4;
+  transition: opacity 0.2s ease;
+}
+
+.sound-button-container.premium .sound-button {
+  cursor: not-allowed;
+}
+
+.sound-button-container.premium:hover .sound-icon {
+  opacity: 1;
+  transform: scale(1.1); /* Keep the hover effect consistent */
+}
+
+/* Tooltip for premium sounds - Neubrutalist Style */
+.sound-button-container.premium::after {
+  content: "This sound is a premium feature";
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--background-secondary);
+  color: var(--text-primary);
+  border-radius: 12px;
+  border: 2px solid var(--border-color);
+  box-shadow: 4px 4px 0px 0px var(--shadow-color);
+  padding: 1rem 1.5rem;
+  font-family: "Aristotelica Display Trial", "Inter", sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.sound-button-container.premium:hover::after {
+  opacity: 1;
+  visibility: visible;
 }

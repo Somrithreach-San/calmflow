@@ -48,6 +48,16 @@
             <div class="playlist-carousel-container">
               <div class="playlist-carousel">
                 <div class="playlist-grid">
+                  <a href="#" class="playlist-card" id="random-playlist">
+                    <div class="playlist-icon">
+                      <img
+                        src="{{ url_for('static', filename='icons/random.png') }}"
+                        alt="Random Icon"
+                        class="icon-img"
+                      />
+                    </div>
+                    <h3 class="playlist-title">Random</h3>
+                  </a>
                   {% for group in groups %}
                   <a href="#" class="playlist-card" data-group="{{ group.id }}">
                     <div class="playlist-icon">
@@ -98,12 +108,91 @@
               </div>
             </div>
             {% endfor %}
+            <div class="sound-button-container premium">
+              <button class="sound-button">
+                <img
+                  src="/static/icons/airplane.png"
+                  alt="Airplane"
+                  class="sound-icon"
+                />
+                <p class="sound-name">Airplane</p>
+              </button>
+            </div>
+            <div class="sound-button-container premium">
+              <button class="sound-button">
+                <img
+                  src="/static/icons/bird.png"
+                  alt="Bird"
+                  class="sound-icon"
+                />
+                <p class="sound-name">Bird</p>
+              </button>
+            </div>
+            <div class="sound-button-container premium">
+              <button class="sound-button">
+                <img src="/static/icons/cat.png" alt="Cat" class="sound-icon" />
+                <p class="sound-name">Cat</p>
+              </button>
+            </div>
+            <div class="sound-button-container premium">
+              <button class="sound-button">
+                <img
+                  src="/static/icons/classroom.png"
+                  alt="Classroom"
+                  class="sound-icon"
+                />
+                <p class="sound-name">Classroom</p>
+              </button>
+            </div>
+            <div class="sound-button-container premium">
+              <button class="sound-button">
+                <img
+                  src="/static/icons/library.png"
+                  alt="Library"
+                  class="sound-icon"
+                />
+                <p class="sound-name">Library</p>
+              </button>
+            </div>
+            <div class="sound-button-container premium">
+              <button class="sound-button">
+                <img
+                  src="/static/icons/rain_on_umbrella.png"
+                  alt="Rain on Umbrella"
+                  class="sound-icon"
+                />
+                <p class="sound-name">Rain on Umbrella</p>
+              </button>
+            </div>
+            <div class="sound-button-container premium">
+              <button class="sound-button">
+                <img
+                  src="/static/icons/ship.png"
+                  alt="Ship"
+                  class="sound-icon"
+                />
+                <p class="sound-name">Ship</p>
+              </button>
+            </div>
+            <div class="sound-button-container premium">
+              <button class="sound-button">
+                <img
+                  src="/static/icons/white_noise.png"
+                  alt="White Noise"
+                  class="sound-icon"
+                />
+                <p class="sound-name">White Noise</p>
+              </button>
+            </div>
           </div>
         </section>
       </main>
 
       <footer class="site-footer">
-        <p>&copy; Calm Flow. All Rights Reserved.</p>
+        <p>
+          &copy; Calm Flow. All third-party assets were used for educational
+          purposes only.
+        </p>
       </footer>
     </div>
 

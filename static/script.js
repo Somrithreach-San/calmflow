@@ -136,43 +136,65 @@ document.addEventListener("DOMContentLoaded", () => {
   playlistCards.forEach((card) => {
     card.addEventListener("click", (event) => {
       event.preventDefault();
-      const selectedGroup = card.getAttribute("data-group");
 
-      // If the clicked playlist is already active, stop everything
+      const isRandomCard = card.id === "random-playlist";
+      const selectedGroup = isRandomCard
+        ? "random"
+        : card.getAttribute("data-group");
+
       if (soundManager.currentActiveGroup === selectedGroup) {
         soundManager.stopAllSounds();
         return;
       }
 
-      // Otherwise, stop all sounds before playing the new playlist
       soundManager.stopAllSounds();
 
-      // Set the new active group
       soundManager.currentActiveGroup = selectedGroup;
       document
         .querySelectorAll(".playlist-card")
         .forEach((c) => c.classList.remove("active"));
       card.classList.add("active");
 
-      // If "Show All" is clicked, we just stop the sounds
-      if (selectedGroup === "all") {
-        document.getElementById("clear-filters").classList.add("active");
-        return;
-      }
+      if (isRandomCard) {
+        const allSoundNames = Array.from(soundManager.sounds.keys());
 
-      // Find and play all sounds for the selected group
-      const soundsToPlay = document.querySelectorAll(
-        `.sound-button-container[data-group~="${selectedGroup}"]`
-      );
-      soundsToPlay.forEach((container) => {
-        const soundName = container.getAttribute("data-sound-name");
-        const sound = soundManager.sounds.get(soundName);
-        if (sound && !sound.isPlaying) {
-          const button = container.querySelector(".sound-button");
-          const volumeControl = container.querySelector(".volume-control");
-          soundManager.toggleSound(soundName, button, volumeControl);
+        for (let i = allSoundNames.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [allSoundNames[i], allSoundNames[j]] = [
+            allSoundNames[j],
+            allSoundNames[i],
+          ];
         }
-      });
+
+        const soundsToPlay = allSoundNames.slice(0, 4);
+
+        soundsToPlay.forEach((soundName) => {
+          const sound = soundManager.sounds.get(soundName);
+          if (sound && !sound.isPlaying) {
+            const container = document.querySelector(
+              `.sound-button-container[data-sound-name="${soundName}"]`
+            );
+            if (container) {
+              const button = container.querySelector(".sound-button");
+              const volumeControl = container.querySelector(".volume-control");
+              soundManager.toggleSound(soundName, button, volumeControl);
+            }
+          }
+        });
+      } else {
+        const soundsToPlay = document.querySelectorAll(
+          `.sound-button-container[data-group~="${selectedGroup}"]`
+        );
+        soundsToPlay.forEach((container) => {
+          const soundName = container.getAttribute("data-sound-name");
+          const sound = soundManager.sounds.get(soundName);
+          if (sound && !sound.isPlaying) {
+            const button = container.querySelector(".sound-button");
+            const volumeControl = container.querySelector(".volume-control");
+            soundManager.toggleSound(soundName, button, volumeControl);
+          }
+        });
+      }
     });
   });
 
@@ -182,10 +204,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const playlistCarousel = document.querySelector(".playlist-carousel");
 
   if (scrollLeftBtn && scrollRightBtn && playlistCarousel) {
-    // Calculate scroll amount based on card width + gap
-    const cardWidth = 200; // Match the CSS card width
-    const gap = 24; // 1.5rem = 24px
-    const scrollAmount = (cardWidth + gap) * 1; // Scroll exactly 1 card at a time
+    const cardWidth = 200;
+    const gap = 24;
+    const scrollAmount = (cardWidth + gap) * 1;
 
     scrollLeftBtn.addEventListener("click", () => {
       playlistCarousel.scrollBy({ left: -scrollAmount, behavior: "smooth" });
@@ -195,7 +216,6 @@ document.addEventListener("DOMContentLoaded", () => {
       playlistCarousel.scrollBy({ left: scrollAmount, behavior: "smooth" });
     });
 
-    // Optional: Add keyboard navigation
     document.addEventListener("keydown", (e) => {
       if (e.key === "ArrowLeft") {
         playlistCarousel.scrollBy({ left: -scrollAmount, behavior: "smooth" });
@@ -204,15 +224,14 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // Show/hide arrows based on scroll position
     const updateArrowVisibility = () => {
       const { scrollLeft, scrollWidth, clientWidth } = playlistCarousel;
       scrollLeftBtn.style.opacity = scrollLeft > 0 ? "1" : "0.5";
       scrollRightBtn.style.opacity =
-        scrollLeft < scrollWidth - clientWidth - 10 ? "1" : "0.5";
+        scrollLeft < scrollWidth - clientWidth - 1 ? "1" : "0.5";
     };
 
     playlistCarousel.addEventListener("scroll", updateArrowVisibility);
-    updateArrowVisibility(); // Initial check
+    updateArrowVisibility();
   }
 });
