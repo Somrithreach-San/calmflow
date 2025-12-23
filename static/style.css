@@ -33,11 +33,12 @@
 }
 
 body {
-  font-family: "Aristotelica Display Trial", "Inter", -apple-system,
-    BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: "Impact", sans-serif;
   background-color: var(--background-primary);
   color: var(--text-primary);
   line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .site-container {
@@ -61,8 +62,10 @@ body {
 
 .logo,
 .section-title {
-  font-family: "Aristotelica Display Trial", "Inter", sans-serif;
-  font-weight: 700;
+  font-family: "Impact", sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .logo {
@@ -112,10 +115,12 @@ body {
   position: absolute;
   right: 0;
   top: 0;
-  font-family: "Aristotelica Display Trial", "Inter", sans-serif;
+  font-family: "Impact", sans-serif;
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 400;
   padding: 1.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 /* --- GLOBAL VOLUME CONTROLS (IN PLAYLOISTS HEADER) --- */
@@ -258,10 +263,12 @@ body {
 
 /* --- FONT STYLES --- */
 .playlist-title {
-  font-family: "Aristotelica Display Trial", "Inter", sans-serif;
+  font-family: "Impact", sans-serif;
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 400;
   color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 /* MODIFIED: Dark theme text is white */
@@ -397,12 +404,13 @@ body {
   cursor: grab;
 }
 
+/* REMOVED GREEN HOVER FROM VOLUME SLIDER */
 .volume-slider::-webkit-slider-thumb:hover,
 .volume-slider::-moz-range-thumb:hover {
   transform: translateY(-1px) translateX(-1px);
   box-shadow: 3px 3px 0px 0px var(--shadow-color);
-  background-color: var(--accent-color);
-  border: 1.5px solid var(--accent-color);
+  background-color: var(--background-secondary);
+  border: 1.5px solid var(--border-color);
 }
 
 /* MODIFIED: Subtler neo-brutalist click effect for slider thumb */
@@ -420,9 +428,11 @@ body {
   margin-top: 2rem;
   border-top: 1px solid var(--border-color-light);
   font-size: 1.3rem;
-  font-weight: 600;
+  font-weight: 400;
   color: var(--text-secondary, #adb5bd);
-  font-family: "Aristotelica Display Trial", "Inter", sans-serif;
+  font-family: "Impact", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .volume-control-container {
@@ -475,15 +485,17 @@ body {
   left: 50%;
   transform: translateX(-50%);
   padding: 1rem 1.5rem;
-  font-family: "Aristotelica Display Trial", "Inter", sans-serif;
+  font-family: "Impact", sans-serif;
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 400;
   white-space: nowrap;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.2s ease, visibility 0.2s ease;
   pointer-events: none;
   z-index: 10;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 .sound-button-container.premium:hover::after {
   opacity: 1;
@@ -557,7 +569,7 @@ body {
   filter: brightness(0) invert(1);
 }
 
-/* REMOVED ALL HOVER EFFECTS: User menu */
+/* User menu */
 .user-menu-container {
   position: relative;
 }
@@ -602,16 +614,6 @@ body {
   filter: brightness(0) invert(1);
 }
 
-/* Keep icons at full opacity on hover */
-.user-menu-button:hover .user-icon {
-  opacity: 1;
-  filter: brightness(0) invert(0);
-}
-
-[data-theme="dark"] .user-menu-button:hover .user-icon {
-  filter: brightness(0) invert(1);
-}
-
 /* NEO-BRUTALIST USER DROPDOWN */
 .user-dropdown {
   position: absolute;
@@ -648,11 +650,15 @@ body {
   width: 100%;
   text-align: left;
   cursor: pointer;
+  font-family: "Impact", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
+/* REMOVED GREEN HOVER FROM DROPDOWN ITEMS */
 .dropdown-item:hover {
-  background-color: var(--accent-color);
-  color: var(--text-on-accent);
+  background-color: transparent;
+  color: var(--text-primary);
 }
 
 .dropdown-item:first-child {
@@ -670,6 +676,7 @@ body {
   background-color: var(--border-color);
   margin: 0.25rem 0;
 }
+
 /* --- NEO-BRUTALIST LOGIN/SIGNUP PAGES --- */
 .login-container,
 .signup-container,
@@ -692,21 +699,18 @@ body {
   width: 100%;
   max-width: 380px;
   text-align: center;
-  /* REMOVED HOVER TRANSITION FOR CARD */
 }
-
-/* REMOVED: .login-box:hover, .signup-box:hover, .user-profile-box:hover */
 
 .login-form-container h2,
 .signup-form-container h2,
 .user-profile-box h2 {
-  font-family: "Aristotelica Display Trial", "Inter", sans-serif;
+  font-family: "Impact", sans-serif;
   font-size: 2rem;
-  font-weight: 700;
+  font-weight: 400;
   margin-bottom: 1.5rem;
   color: var(--text-primary);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
 }
 
 /* Form styles */
@@ -725,8 +729,8 @@ body {
 }
 
 .form-group label {
-  font-family: "Aristotelica Display Trial", "Inter", sans-serif;
-  font-weight: 600;
+  font-family: "Impact", sans-serif;
+  font-weight: 400;
   font-size: 0.95rem;
   color: var(--text-primary);
   text-transform: uppercase;
@@ -738,7 +742,7 @@ body {
   background-color: var(--background-primary);
   border: 2px solid var(--border-color);
   border-radius: 6px;
-  font-family: "Inter", sans-serif;
+  font-family: "Impact", sans-serif;
   font-size: 0.95rem;
   color: var(--text-primary);
   transition: all 0.15s ease;
@@ -757,7 +761,7 @@ body {
   box-shadow: 2px 2px 0px 0px var(--border-color);
 }
 
-/* Login/Signup buttons - KEEP NEO-BRUTALISM ANIMATIONS */
+/* Login/Signup buttons */
 .login-form .action-button,
 .signup-form .action-button {
   background-color: var(--background-primary);
@@ -766,9 +770,9 @@ body {
   box-shadow: 4px 4px 0px 0px var(--shadow-color);
   color: var(--text-primary);
   padding: 0.875rem 1.5rem;
-  font-family: "Aristotelica Display Trial", "Inter", sans-serif;
+  font-family: "Impact", sans-serif;
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   cursor: pointer;
@@ -777,10 +781,11 @@ body {
   width: 100%;
 }
 
+/* NO GREEN HOVER */
 .login-form .action-button:hover,
 .signup-form .action-button:hover {
-  background-color: var(--background-secondary); /* Changed from green */
-  color: var(--text-primary); /* Changed from text-on-accent */
+  background-color: var(--background-secondary);
+  color: var(--text-primary);
   transform: translateY(-2px) translateX(-2px);
   box-shadow: 6px 6px 0px 0px var(--shadow-color);
 }
@@ -795,15 +800,17 @@ body {
 .signup-link,
 .login-link {
   margin-top: 1.5rem;
-  font-family: "Inter", sans-serif;
+  font-family: "Impact", sans-serif;
   font-size: 0.9rem;
   color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .signup-link a,
 .login-link a {
   color: var(--text-primary);
-  font-weight: 700;
+  font-weight: 400;
   text-decoration: none;
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 1px;
@@ -827,11 +834,13 @@ body {
 }
 
 .user-info p {
-  font-family: "Inter", sans-serif;
+  font-family: "Impact", sans-serif;
   font-size: 1rem;
   margin-bottom: 0.75rem;
   padding: 0.25rem 0;
   border-bottom: 1px solid var(--border-color-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .user-info p:last-child {
@@ -840,8 +849,8 @@ body {
 }
 
 .user-info strong {
-  font-family: "Aristotelica Display Trial", "Inter", sans-serif;
-  font-weight: 700;
+  font-family: "Impact", sans-serif;
+  font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-right: 0.5rem;
@@ -855,7 +864,6 @@ body {
 }
 
 /* Toast Messages */
-/* Toast Messages - REMOVED COLORS */
 .toast-container {
   position: fixed;
   top: 20px;
@@ -886,14 +894,13 @@ body {
   transform: translateX(100%);
 }
 
-/* REMOVED ALL COLORED TOAST VARIATIONS */
-/* .toast-success, .toast-error, .toast-info removed */
-
 .toast-message {
-  font-family: "Inter", sans-serif;
+  font-family: "Impact", sans-serif;
   font-size: 0.9rem;
   color: var(--text-primary);
   margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .toast-close {
@@ -921,6 +928,38 @@ body {
     transform: translateX(0);
     opacity: 1;
   }
+}
+
+/* Profile page action button styles */
+.profile-actions .action-button {
+  background-color: var(--background-primary);
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: 4px 4px 0px 0px var(--shadow-color);
+  color: var(--text-primary);
+  padding: 0.875rem 1.5rem;
+  font-family: "Impact", sans-serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
+.profile-actions .action-button:hover {
+  background-color: var(--background-secondary);
+  color: var(--text-primary);
+  transform: translateY(-2px) translateX(-2px);
+  box-shadow: 6px 6px 0px 0px var(--shadow-color);
+}
+
+.profile-actions .action-button:active {
+  transform: translateY(4px) translateX(4px);
+  box-shadow: 0px 0px 0px 0px var(--shadow-color);
 }
 
 /* Responsive design for auth pages */
@@ -989,40 +1028,59 @@ body {
   }
 }
 
-/* ✅ REMOVE GREEN HOVER FROM USER MENU DROPDOWN ONLY */
-.user-dropdown .dropdown-item:hover {
-  background-color: transparent !important;
-  color: var(--text-primary) !important;
+/* Additional responsive adjustments */
+@media (max-width: 1024px) {
+  .playlist-carousel-container {
+    width: 100%;
+  }
+
+  .sound-buttons-grid {
+    grid-template-columns: repeat(4, 65px);
+    gap: 4rem;
+  }
 }
 
-/* Profile page action button styles */
-.profile-actions .action-button {
-  background-color: var(--background-primary);
-  border: 2px solid var(--border-color);
-  border-radius: 6px;
-  box-shadow: 4px 4px 0px 0px var(--shadow-color);
-  color: var(--text-primary);
-  padding: 0.875rem 1.5rem;
-  font-family: "Aristotelica Display Trial", "Inter", sans-serif;
-  font-size: 1.1rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  text-decoration: none;
-  display: inline-block;
-  text-align: center;
+@media (max-width: 768px) {
+  .site-container {
+    padding: 0 1rem;
+  }
+
+  .playlist-carousel-container {
+    width: 100%;
+  }
+
+  .sound-buttons-grid {
+    grid-template-columns: repeat(3, 65px);
+    gap: 3rem;
+  }
+
+  .carousel-wrapper {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .arrow-btn {
+    order: 2;
+  }
+
+  .playlist-carousel-container {
+    order: 1;
+  }
 }
 
-.profile-actions .action-button:hover {
-  background-color: var(--background-secondary);
-  color: var(--text-primary);
-  transform: translateY(-2px) translateX(-2px);
-  box-shadow: 6px 6px 0px 0px var(--shadow-color);
-}
+@media (max-width: 480px) {
+  .sound-buttons-grid {
+    grid-template-columns: repeat(2, 65px);
+    gap: 2rem;
+  }
 
-.profile-actions .action-button:active {
-  transform: translateY(4px) translateX(4px);
-  box-shadow: 0px 0px 0px 0px var(--shadow-color);
+  .playlist-card {
+    width: 160px;
+    height: 160px;
+    padding: 1rem;
+  }
+
+  .playlist-title {
+    font-size: 1rem;
+  }
 }
