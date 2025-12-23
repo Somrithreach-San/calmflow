@@ -14,13 +14,12 @@
       href="{{ url_for('static', filename='icons/favicon.png') }}"
     />
   </head>
-  <body>
+  <body data-user-logged-in="{{ 'true' if user else 'false' }}">
     <div class="site-container">
       <header class="site-header">
         <div class="header-container">
           <a href="/" class="logo">Calm Flow</a>
           <div class="header-controls">
-            <!-- Theme toggle -->
             <button
               type="button"
               class="theme-toggle"
@@ -39,7 +38,7 @@
               />
             </button>
 
-            <!-- User dropdown with dynamic content based on login status -->
+            <!-- User dropdown -->
             <div class="user-menu-container">
               <button class="user-menu-button" id="user-menu-button">
                 <img
@@ -50,7 +49,7 @@
               </button>
               <div class="user-dropdown" id="user-dropdown">
                 {% if user %}
-                <!-- Logged in state - REMOVED HELLO MESSAGE -->
+                <!-- Logged in state - simple profile and logout -->
                 <a href="{{ url_for('user_profile') }}" class="dropdown-item"
                   >Profile</a
                 >
@@ -73,7 +72,7 @@
           <div class="playlists-header">
             <h2 class="section-title">Playlists</h2>
 
-            <!-- Global volume controls to the right of Playlists title -->
+            <!-- Global volume controls -->
             <div class="global-volume-controls">
               <div class="volume-control-container">
                 <img
@@ -134,7 +133,8 @@
             <button class="action-button clear">Clear Playing</button>
           </div>
           <div class="sound-buttons-grid">
-            {% for sound in sounds %}
+            {% for sound in sounds %} {% if sound.user_can_access %}
+            <!-- Accessible sound (all for registered users, non-premium for guests) -->
             <div
               class="sound-button-container"
               data-sound-name="{{ sound['name'] }}"
@@ -158,87 +158,31 @@
                 />
               </div>
             </div>
-            {% endfor %}
-            <div class="sound-button-container premium">
+            {% else %}
+            <!-- Premium sound (locked for non-logged-in users) -->
+            <div
+              class="sound-button-container premium"
+              title="🔒 Free Account - Register to unlock all sounds!"
+            >
               <button class="sound-button">
                 <img
-                  src="{{ url_for('static', filename='icons/airplane.png') }}"
-                  alt="Airplane"
+                  src="{{ url_for('static', filename=sound['icon'].split('static/')[1] if 'static/' in sound['icon'] else sound['icon']) }}"
+                  alt="{{ sound['display_name'] }}"
                   class="sound-icon"
                 />
-                <p class="sound-name">Airplane</p>
+                <p class="sound-name">{{ sound['display_name'] }}</p>
               </button>
-            </div>
-            <div class="sound-button-container premium">
-              <button class="sound-button">
-                <img
-                  src="{{ url_for('static', filename='icons/bird.png') }}"
-                  alt="Bird"
-                  class="sound-icon"
+              <div class="volume-control hidden">
+                <input
+                  type="range"
+                  class="volume-slider"
+                  min="0"
+                  max="100"
+                  value="50"
                 />
-                <p class="sound-name">Bird</p>
-              </button>
+              </div>
             </div>
-            <div class="sound-button-container premium">
-              <button class="sound-button">
-                <img
-                  src="{{ url_for('static', filename='icons/cat.png') }}"
-                  alt="Cat"
-                  class="sound-icon"
-                />
-                <p class="sound-name">Cat</p>
-              </button>
-            </div>
-            <div class="sound-button-container premium">
-              <button class="sound-button">
-                <img
-                  src="{{ url_for('static', filename='icons/classroom.png') }}"
-                  alt="Classroom"
-                  class="sound-icon"
-                />
-                <p class="sound-name">Classroom</p>
-              </button>
-            </div>
-            <div class="sound-button-container premium">
-              <button class="sound-button">
-                <img
-                  src="{{ url_for('static', filename='icons/library.png') }}"
-                  alt="Library"
-                  class="sound-icon"
-                />
-                <p class="sound-name">Library</p>
-              </button>
-            </div>
-            <div class="sound-button-container premium">
-              <button class="sound-button">
-                <img
-                  src="{{ url_for('static', filename='icons/rain_on_umbrella.png') }}"
-                  alt="Rain on Umbrella"
-                  class="sound-icon"
-                />
-                <p class="sound-name">Rain on Umbrella</p>
-              </button>
-            </div>
-            <div class="sound-button-container premium">
-              <button class="sound-button">
-                <img
-                  src="{{ url_for('static', filename='icons/ship.png') }}"
-                  alt="Ship"
-                  class="sound-icon"
-                />
-                <p class="sound-name">Ship</p>
-              </button>
-            </div>
-            <div class="sound-button-container premium">
-              <button class="sound-button">
-                <img
-                  src="{{ url_for('static', filename='icons/white_noise.png') }}"
-                  alt="White Noise"
-                  class="sound-icon"
-                />
-                <p class="sound-name">White Noise</p>
-              </button>
-            </div>
+            {% endif %} {% endfor %}
           </div>
         </section>
       </main>

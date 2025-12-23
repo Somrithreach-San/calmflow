@@ -1,507 +1,551 @@
-// Theme toggle functionality - added to your existing script
-document.addEventListener("DOMContentLoaded", function () {
-  // --- THEME TOGGLE LOGIC ---
-  const themeToggleButton = document.getElementById("theme-toggle");
-  const docElement = document.documentElement;
+// SoundManager Class
+class SoundManager {
+  constructor() {
+    this.sounds = new Map();
+    this.globalVolume = 0.5;
+    this.currentActiveGroup = null;
+    this.isUserLoggedIn = document.body.dataset.userLoggedIn === "true";
+    this.init();
+  }
 
-  const applyTheme = (theme) => {
-    docElement.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
-  };
+  async init() {
+    try {
+      console.log("🎵 Initializing SoundManager...");
+      console.log("👤 User logged in:", this.isUserLoggedIn);
 
-  // Initialize theme from localStorage or default to 'dark'
-  const preferredTheme = localStorage.getItem("theme") || "dark";
-  applyTheme(preferredTheme);
+      const response = await fetch("/api/sounds");
+      if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}`);
+      }
+      const soundsData = await response.json();
 
-  if (themeToggleButton) {
-    themeToggleButton.addEventListener("click", () => {
-      const currentTheme = docElement.getAttribute("data-theme");
-      const newTheme = currentTheme === "light" ? "dark" : "light";
-      applyTheme(newTheme);
+      this.allSoundsData = soundsData;
+      console.log(`📊 Loaded ${soundsData.length} sounds from API`);
+
+      this.initializeAccessibleSounds(soundsData);
+      this.setupPlaylistHandlers();
+      this.setupClearButton();
+      this.setupGlobalVolumeControl();
+      this.setupThemeToggle();
+      this.setupUserMenu();
+      this.setupCarousel();
+      this.initSliderThumbEffect();
+
+      console.log("✅ SoundManager initialized successfully");
+    } catch (error) {
+      console.error("❌ Error initializing SoundManager:", error);
+    }
+  }
+
+  // Initialize slider thumb neo-brutalist effect
+  initSliderThumbEffect() {
+    const sliders = document.querySelectorAll('input[type="range"]');
+
+    sliders.forEach((slider) => {
+      // Create thumb div if it doesn't exist
+      let thumbDiv = slider.parentElement.querySelector(".slider-thumb");
+      if (!thumbDiv) {
+        thumbDiv = document.createElement("div");
+        thumbDiv.className = "slider-thumb";
+        slider.parentElement.appendChild(thumbDiv);
+      }
+
+      // Update thumb position
+      const updateThumb = () => {
+        const value = slider.value;
+        const min = slider.min || 0;
+        const max = slider.max || 100;
+        const percent = ((value - min) / (max - min)) * 100;
+
+        thumbDiv.style.left = `calc(${percent}% - 8px)`;
+        // REMOVED: thumbDiv.textContent = `${value}%`;
+      };
+
+      // Initial update
+      updateThumb();
+
+      // Update on input
+      slider.addEventListener("input", updateThumb);
+
+      // Add hover effect
+      slider.addEventListener("mouseenter", () => {
+        thumbDiv.style.opacity = "1";
+      });
+
+      slider.addEventListener("mouseleave", () => {
+        // Only hide if slider is not being dragged
+        if (!slider.matches(":active")) {
+          thumbDiv.style.opacity = "0";
+        }
+      });
+
+      // Show thumb when slider is being dragged
+      slider.addEventListener("mousedown", () => {
+        thumbDiv.style.opacity = "1";
+      });
+
+      // Hide thumb after dragging ends
+      slider.addEventListener("mouseup", () => {
+        setTimeout(() => {
+          if (!slider.matches(":hover")) {
+            thumbDiv.style.opacity = "0";
+          }
+        }, 1000);
+      });
+    });
+
+    console.log("🎛️ Slider thumb effect initialized (no percentages)");
+  }
+
+  initializeAccessibleSounds(soundsData) {
+    const soundButtons = document.querySelectorAll(
+      ".sound-button:not(.premium .sound-button)"
+    );
+    console.log(`🔊 Found ${soundButtons.length} accessible sound buttons`);
+
+    let initializedCount = 0;
+    soundButtons.forEach((button) => {
+      const soundContainer = button.closest(".sound-button-container");
+      const soundName = soundContainer.getAttribute("data-sound-name");
+      const soundInfo = soundsData.find((s) => s.name === soundName);
+
+      if (soundInfo && soundInfo.user_can_access) {
+        this.initializeSound(button, soundInfo);
+        initializedCount++;
+      }
+    });
+    console.log(`✅ Initialized ${initializedCount} sounds`);
+  }
+
+  setupPlaylistHandlers() {
+    const playlistCards = document.querySelectorAll(".playlist-card");
+    console.log(`🎵 Found ${playlistCards.length} playlist cards`);
+
+    playlistCards.forEach((card, index) => {
+      const groupId = card.getAttribute("data-group");
+      const groupName = card.querySelector(".playlist-title").textContent;
+      console.log(`  ${index}: ${groupName} (ID: ${groupId || "Random"})`);
+
+      // Store original state
+      card.dataset.originalState = "stopped";
+
+      card.addEventListener("click", (e) => {
+        e.preventDefault();
+        const groupId = card.getAttribute("data-group");
+        const groupName = card.querySelector(".playlist-title").textContent;
+
+        console.log(`🎯 Playlist clicked: ${groupName} (ID: ${groupId})`);
+
+        // Toggle playlist on/off
+        if (card.dataset.originalState === "stopped") {
+          // Start the playlist
+          if (card.id === "random-playlist") {
+            this.playRandomSounds();
+          } else if (groupId) {
+            this.playGroupSounds(parseInt(groupId), groupName);
+          }
+          card.dataset.originalState = "playing";
+          card.classList.add("playing");
+        } else {
+          // Stop the playlist
+          this.stopAllSounds();
+          card.dataset.originalState = "stopped";
+          card.classList.remove("playing");
+          console.log(`⏹️ Stopped ${groupName} playlist`);
+        }
+      });
     });
   }
 
-  // --- TOAST MESSAGE HANDLING ---
-  const toasts = document.querySelectorAll(".toast");
-  toasts.forEach((toast) => {
-    const closeButton = toast.querySelector(".toast-close");
-    if (closeButton) {
-      closeButton.addEventListener("click", () => {
-        toast.classList.add("fade-out");
-        setTimeout(() => toast.remove(), 500);
-      });
-    }
-    setTimeout(() => {
-      toast.classList.add("fade-out");
-      setTimeout(() => toast.remove(), 500);
-    }, 5000);
-  });
+  playGroupSounds(groupId, groupName) {
+    console.log(`▶️ Playing ${groupName} playlist (ID: ${groupId})`);
 
-  // --- FORM INPUT FOCUS EFFECTS (for login/signup pages) ---
-  const formInputs = document.querySelectorAll(".form-group input");
-  formInputs.forEach((input) => {
-    input.addEventListener("focus", () => {
-      input.parentElement.classList.add("focused");
-    });
-
-    input.addEventListener("blur", () => {
-      input.parentElement.classList.remove("focused");
-    });
-  });
-
-  // --- REST OF YOUR EXISTING SOUND MANAGER CODE ---
-  class SoundManager {
-    constructor() {
-      this.sounds = new Map();
-      this.globalVolume = 0.5;
-      this.currentActiveGroup = null;
-      this.init();
+    if (!this.allSoundsData) {
+      console.error("❌ No sound data available");
+      return;
     }
 
-    async init() {
-      try {
-        const response = await fetch("/api/sounds");
-        if (!response.ok) {
-          throw new Error(`API request failed with status ${response.status}`);
+    // Only stop other sounds, not this group if it's already playing
+    if (this.currentActiveGroup !== groupId) {
+      this.stopAllSounds();
+    }
+
+    const groupSounds = this.allSoundsData.filter((sound) => {
+      const hasAccess = this.isUserLoggedIn || !sound.is_premium;
+      const inGroup = sound.groups.includes(groupId);
+      return hasAccess && inGroup;
+    });
+
+    console.log(
+      `📊 Found ${groupSounds.length} accessible sounds in ${groupName}`
+    );
+
+    if (groupSounds.length === 0) {
+      console.warn(`⚠️ No accessible sounds in ${groupName}`);
+      return;
+    }
+
+    let playedCount = 0;
+    groupSounds.forEach((sound) => {
+      const audio = this.sounds.get(sound.name);
+      if (audio) {
+        audio.volume = (sound.default_volume || 0.5) * this.globalVolume;
+
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              this.updateButtonState(sound.name, true);
+              playedCount++;
+              console.log(`   🔊 Playing: ${sound.display_name}`);
+            })
+            .catch((error) => {
+              console.error(`   ❌ Error playing ${sound.name}:`, error);
+            });
         }
-        const soundsData = await response.json();
-
-        const soundButtons = document.querySelectorAll(".sound-button");
-        soundButtons.forEach((button) => {
-          const soundContainer = button.closest(".sound-button-container");
-          const soundName = soundContainer.getAttribute("data-sound-name");
-          const soundInfo = soundsData.find((s) => s.name === soundName);
-          if (soundInfo) {
-            this.initializeSound(button, soundInfo);
-          }
-        });
-
-        // Initialize slider thumb neo-brutalist effect
-        this.initSliderThumbEffect();
-      } catch (error) {
-        console.error("Error initializing SoundManager:", error);
       }
+    });
+
+    console.log(`✅ Attempted to play ${playedCount} sounds`);
+    this.currentActiveGroup = groupId;
+    this.highlightActiveGroup(groupId);
+  }
+
+  playRandomSounds() {
+    console.log("🎲 Playing random sounds");
+
+    if (!this.allSoundsData) {
+      console.error("❌ No sound data available");
+      return;
     }
 
-    initializeSound(button, soundInfo) {
-      const audio = new Audio();
-      audio.loop = true;
+    this.stopAllSounds();
 
-      const volumeControl =
-        button.parentElement.querySelector(".volume-control");
-      const volumeSlider = volumeControl.querySelector(".volume-slider");
+    const accessibleSounds = this.allSoundsData.filter(
+      (sound) => this.isUserLoggedIn || !sound.is_premium
+    );
 
-      const initialVolume = soundInfo.default_volume || 0.5;
-      volumeSlider.value = initialVolume * 100;
+    console.log(`📊 Total accessible sounds: ${accessibleSounds.length}`);
 
-      this.sounds.set(soundInfo.name, {
-        audio: audio,
-        isPlaying: false,
-        volume: initialVolume,
-        data: soundInfo,
-      });
+    if (accessibleSounds.length === 0) {
+      console.warn("⚠️ No accessible sounds available");
+      return;
+    }
 
-      button.addEventListener("click", () => {
-        this.toggleSound(soundInfo.name, button, volumeControl);
-      });
+    const randomCount = Math.min(
+      accessibleSounds.length,
+      Math.floor(Math.random() * 3) + 3
+    );
+    const shuffled = [...accessibleSounds].sort(() => 0.5 - Math.random());
+    const selectedSounds = shuffled.slice(0, randomCount);
+
+    console.log(`🎲 Selected ${selectedSounds.length} random sounds`);
+
+    let playedCount = 0;
+    selectedSounds.forEach((sound) => {
+      const audio = this.sounds.get(sound.name);
+      if (audio) {
+        audio.volume = (sound.default_volume || 0.5) * this.globalVolume;
+
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              this.updateButtonState(sound.name, true);
+              playedCount++;
+              console.log(`   🔊 Playing: ${sound.display_name}`);
+            })
+            .catch((error) => {
+              console.error(`   ❌ Error playing ${sound.name}:`, error);
+            });
+        }
+      }
+    });
+
+    console.log(`✅ Attempted to play ${playedCount} random sounds`);
+    this.currentActiveGroup = null;
+    this.highlightActiveGroup(null);
+  }
+
+  initializeSound(button, soundInfo) {
+    const soundContainer = button.closest(".sound-button-container");
+    const soundName = soundInfo.name;
+
+    const audio = new Audio(soundInfo.file_path);
+    audio.loop = true;
+    audio.volume = soundInfo.default_volume || 0.5;
+
+    this.sounds.set(soundName, audio);
+
+    button.addEventListener("click", () => {
+      if (audio.paused) {
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              this.updateButtonState(soundName, true);
+              console.log(`▶️ Manually playing: ${soundName}`);
+              // Show volume control when playing
+              const volumeControl =
+                soundContainer.querySelector(".volume-control");
+              if (volumeControl) {
+                volumeControl.classList.remove("hidden");
+              }
+            })
+            .catch((error) => {
+              console.error(`❌ Error playing ${soundName}:`, error);
+            });
+        }
+      } else {
+        audio.pause();
+        this.updateButtonState(soundName, false);
+        // Hide volume control when paused (if not hovering)
+        if (!soundContainer.matches(":hover")) {
+          const volumeControl = soundContainer.querySelector(".volume-control");
+          if (volumeControl) {
+            volumeControl.classList.add("hidden");
+          }
+        }
+      }
+    });
+
+    const volumeSlider = soundContainer.querySelector(".volume-slider");
+    const volumeControl = soundContainer.querySelector(".volume-control");
+
+    // Only show volume control on click, not hover
+    button.addEventListener("click", () => {
+      if (volumeControl && !audio.paused) {
+        volumeControl.classList.remove("hidden");
+      }
+    });
+
+    // Hide volume control when mouse leaves AND sound is not playing
+    soundContainer.addEventListener("mouseleave", () => {
+      if (audio.paused && volumeControl) {
+        volumeControl.classList.add("hidden");
+      }
+    });
+
+    if (volumeSlider) {
+      // Initialize slider thumb for this slider
+      setTimeout(() => {
+        this.initSliderThumbEffect();
+      }, 100);
 
       volumeSlider.addEventListener("input", (e) => {
-        const newVolume = e.target.value / 100;
-        const sound = this.sounds.get(soundInfo.name);
-        if (sound) {
-          sound.volume = newVolume;
-          if (sound.isPlaying) {
-            sound.audio.volume = newVolume * this.globalVolume;
-          }
-        }
+        audio.volume = e.target.value / 100;
+        this.updateAllVolumes();
       });
+      audio.volume = volumeSlider.value / 100;
     }
 
-    initSliderThumbEffect() {
-      // Add neo-brutalist drag effect to all volume sliders
-      const volumeSliders = document.querySelectorAll(".volume-slider");
-
-      volumeSliders.forEach((slider) => {
-        let isThumbPressed = false;
-
-        // Helper function to check if event is on the thumb
-        const isThumbEvent = (e) => {
-          // For mouse events, check if target is the slider (thumb clicks go to slider)
-          if (e.type.includes("mouse") || e.type.includes("pointer")) {
-            const rect = slider.getBoundingClientRect();
-            const thumbWidth = 20; // Same as CSS thumb size
-            const thumbPosition =
-              (slider.value / 100) * (rect.width - thumbWidth);
-
-            // Check if click is within thumb area (with some padding)
-            const clickX = e.clientX - rect.left;
-            return (
-              clickX >= thumbPosition - 15 &&
-              clickX <= thumbPosition + thumbWidth + 15
-            );
-          }
-          // For touch events, it's harder to detect thumb specifically
-          return true; // Assume it's the thumb for touch events
-        };
-
-        // Mouse down - check if it's on the thumb
-        slider.addEventListener("mousedown", (e) => {
-          if (isThumbEvent(e)) {
-            isThumbPressed = true;
-            slider.classList.add("thumb-pressed");
-          }
-        });
-
-        // Mouse up - remove pressed state
-        slider.addEventListener("mouseup", () => {
-          if (isThumbPressed) {
-            isThumbPressed = false;
-            slider.classList.remove("thumb-pressed");
-          }
-        });
-
-        // Mouse leave - remove pressed state if mouse leaves while dragging
-        slider.addEventListener("mouseleave", () => {
-          if (isThumbPressed) {
-            isThumbPressed = false;
-            slider.classList.remove("thumb-pressed");
-          }
-        });
-
-        // Touch start
-        slider.addEventListener("touchstart", (e) => {
-          isThumbPressed = true;
-          slider.classList.add("thumb-pressed");
-        });
-
-        // Touch end
-        slider.addEventListener("touchend", () => {
-          isThumbPressed = false;
-          slider.classList.remove("thumb-pressed");
-        });
-
-        // Touch cancel
-        slider.addEventListener("touchcancel", () => {
-          isThumbPressed = false;
-          slider.classList.remove("thumb-pressed");
-        });
-
-        // Global mouse up to catch releases outside the slider
-        document.addEventListener("mouseup", () => {
-          if (isThumbPressed) {
-            isThumbPressed = false;
-            slider.classList.remove("thumb-pressed");
-          }
-        });
-
-        // Global touch end
-        document.addEventListener("touchend", () => {
-          if (isThumbPressed) {
-            isThumbPressed = false;
-            slider.classList.remove("thumb-pressed");
-          }
-        });
-      });
-    }
-
-    async toggleSound(soundName, button, volumeControl) {
-      const sound = this.sounds.get(soundName);
-      if (!sound) return;
-
-      try {
-        if (!sound.isPlaying) {
-          if (!sound.audio.src) {
-            sound.audio.src = sound.data.file_path;
-          }
-          sound.audio.volume = sound.volume * this.globalVolume;
-          await sound.audio.play();
-          sound.isPlaying = true;
-          button.classList.add("active");
-          volumeControl.classList.remove("hidden");
-        } else {
-          sound.audio.pause();
-          sound.audio.currentTime = 0;
-          sound.isPlaying = false;
-          button.classList.remove("active");
-          volumeControl.classList.add("hidden");
-        }
-      } catch (error) {
-        console.error("Error toggling sound:", error);
+    audio.addEventListener("play", () => {
+      // Show volume control when playing
+      if (volumeControl) {
+        volumeControl.classList.remove("hidden");
       }
-    }
+    });
 
-    setGlobalVolume(volume) {
-      this.globalVolume = volume;
-      this.sounds.forEach((sound) => {
-        if (sound.isPlaying) {
-          sound.audio.volume = sound.volume * this.globalVolume;
-        }
-      });
-    }
+    audio.addEventListener("pause", () => {
+      // Hide volume control when paused (if not hovering)
+      if (volumeControl && !soundContainer.matches(":hover")) {
+        volumeControl.classList.add("hidden");
+      }
+    });
 
-    stopAllSounds() {
-      this.sounds.forEach((sound, soundName) => {
-        if (sound.isPlaying) {
-          const soundContainer = document.querySelector(
-            `.sound-button-container[data-sound-name="${soundName}"]`
-          );
-          if (soundContainer) {
-            const button = soundContainer.querySelector(".sound-button");
-            const volumeControl =
-              soundContainer.querySelector(".volume-control");
-            this.toggleSound(soundName, button, volumeControl);
-          }
-        }
-      });
-      this.currentActiveGroup = null;
-      document
-        .querySelectorAll(".playlist-card")
-        .forEach((c) => c.classList.remove("active"));
+    console.log(`✅ Initialized sound: ${soundName}`);
+  }
+
+  updateButtonState(soundName, isPlaying) {
+    const soundContainer = document.querySelector(
+      `[data-sound-name="${soundName}"]`
+    );
+    if (!soundContainer) return;
+
+    const button = soundContainer.querySelector(".sound-button");
+
+    if (isPlaying) {
+      button.classList.add("playing");
+      const icon = button.querySelector(".sound-icon");
+      if (icon) icon.style.transform = "scale(1.05)";
+    } else {
+      button.classList.remove("playing");
+      const icon = button.querySelector(".sound-icon");
+      if (icon) icon.style.transform = "scale(1)";
     }
   }
 
-  // Initialize SoundManager only if on main page (not login/signup)
-  const isMainPage =
-    document.querySelector(".sound-buttons-grid") ||
-    document.querySelector(".playlist-carousel");
-  if (isMainPage) {
-    const soundManager = new SoundManager();
+  stopAllSounds() {
+    console.log("⏹️ Stopping all sounds");
+    this.sounds.forEach((audio, soundName) => {
+      audio.pause();
+      audio.currentTime = 0;
+      this.updateButtonState(soundName, false);
+    });
+    this.currentActiveGroup = null;
+    this.highlightActiveGroup(null);
 
-    // Global Controls
-    const clearButton = document.querySelector(".action-button.clear");
-    const globalVolumeSlider = document.getElementById("global-volume");
+    // Reset all playlist cards to stopped state
+    document.querySelectorAll(".playlist-card").forEach((card) => {
+      card.dataset.originalState = "stopped";
+      card.classList.remove("playing");
+    });
+  }
 
-    if (clearButton) {
-      clearButton.addEventListener("click", () => soundManager.stopAllSounds());
-    }
-
-    if (globalVolumeSlider) {
-      globalVolumeSlider.addEventListener("input", (e) =>
-        soundManager.setGlobalVolume(e.target.value / 100)
-      );
-
-      // Add neo-brutalist effect to global volume slider too
-      let isThumbPressedGlobal = false;
-
-      // Mouse down
-      globalVolumeSlider.addEventListener("mousedown", (e) => {
-        const rect = globalVolumeSlider.getBoundingClientRect();
-        const thumbWidth = 20;
-        const thumbPosition =
-          (globalVolumeSlider.value / 100) * (rect.width - thumbWidth);
-        const clickX = e.clientX - rect.left;
-
-        // Check if click is within thumb area
-        if (
-          clickX >= thumbPosition - 15 &&
-          clickX <= thumbPosition + thumbWidth + 15
-        ) {
-          isThumbPressedGlobal = true;
-          globalVolumeSlider.classList.add("thumb-pressed");
-        }
-      });
-
-      // Mouse up
-      globalVolumeSlider.addEventListener("mouseup", () => {
-        if (isThumbPressedGlobal) {
-          isThumbPressedGlobal = false;
-          globalVolumeSlider.classList.remove("thumb-pressed");
-        }
-      });
-
-      // Mouse leave
-      globalVolumeSlider.addEventListener("mouseleave", () => {
-        if (isThumbPressedGlobal) {
-          isThumbPressedGlobal = false;
-          globalVolumeSlider.classList.remove("thumb-pressed");
-        }
-      });
-
-      // Touch events
-      globalVolumeSlider.addEventListener("touchstart", () => {
-        isThumbPressedGlobal = true;
-        globalVolumeSlider.classList.add("thumb-pressed");
-      });
-
-      globalVolumeSlider.addEventListener("touchend", () => {
-        isThumbPressedGlobal = false;
-        globalVolumeSlider.classList.remove("thumb-pressed");
-      });
-
-      // Global cleanup
-      document.addEventListener("mouseup", () => {
-        if (isThumbPressedGlobal) {
-          isThumbPressedGlobal = false;
-          globalVolumeSlider.classList.remove("thumb-pressed");
-        }
-      });
-
-      document.addEventListener("touchend", () => {
-        if (isThumbPressedGlobal) {
-          isThumbPressedGlobal = false;
-          globalVolumeSlider.classList.remove("thumb-pressed");
-        }
-      });
-    }
-
-    // Global volume icon click handler
-    const globalVolumeIcon = document.getElementById("global-volume-icon");
-    if (globalVolumeIcon) {
-      globalVolumeIcon.addEventListener("click", () => {
-        if (globalVolumeSlider) {
-          // Toggle mute/unmute
-          const isMuted = globalVolumeSlider.value === "0";
-          globalVolumeSlider.value = isMuted ? "50" : "0";
-          const volumeEvent = new Event("input", { bubbles: true });
-          globalVolumeSlider.dispatchEvent(volumeEvent);
-        }
-      });
-    }
-
-    // Playlist Playback Logic
-    const playlistCards = document.querySelectorAll(".playlist-card");
-
-    playlistCards.forEach((card) => {
-      card.addEventListener("click", (event) => {
-        event.preventDefault();
-
-        const isRandomCard = card.id === "random-playlist";
-        const selectedGroup = isRandomCard
-          ? "random"
-          : card.getAttribute("data-group");
-
-        if (soundManager.currentActiveGroup === selectedGroup) {
-          soundManager.stopAllSounds();
-          return;
-        }
-
-        soundManager.stopAllSounds();
-
-        soundManager.currentActiveGroup = selectedGroup;
-        document
-          .querySelectorAll(".playlist-card")
-          .forEach((c) => c.classList.remove("active"));
-        card.classList.add("active");
-
-        if (isRandomCard) {
-          const allSoundNames = Array.from(soundManager.sounds.keys());
-
-          for (let i = allSoundNames.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [allSoundNames[i], allSoundNames[j]] = [
-              allSoundNames[j],
-              allSoundNames[i],
-            ];
-          }
-
-          const soundsToPlay = allSoundNames.slice(0, 4);
-
-          soundsToPlay.forEach((soundName) => {
-            const sound = soundManager.sounds.get(soundName);
-            if (sound && !sound.isPlaying) {
-              const container = document.querySelector(
-                `.sound-button-container[data-sound-name="${soundName}"]`
-              );
-              if (container) {
-                const button = container.querySelector(".sound-button");
-                const volumeControl =
-                  container.querySelector(".volume-control");
-                soundManager.toggleSound(soundName, button, volumeControl);
-              }
-            }
-          });
-        } else {
-          const soundsToPlay = document.querySelectorAll(
-            `.sound-button-container[data-group~="${selectedGroup}"]`
-          );
-          soundsToPlay.forEach((container) => {
-            const soundName = container.getAttribute("data-sound-name");
-            const sound = soundManager.sounds.get(soundName);
-            if (sound && !sound.isPlaying) {
-              const button = container.querySelector(".sound-button");
-              const volumeControl = container.querySelector(".volume-control");
-              soundManager.toggleSound(soundName, button, volumeControl);
-            }
-          });
-        }
-      });
+  highlightActiveGroup(groupId) {
+    document.querySelectorAll(".playlist-card").forEach((card) => {
+      card.classList.remove("active");
     });
 
-    // User dropdown functionality
+    if (groupId) {
+      const activeCard = document.querySelector(`[data-group="${groupId}"]`);
+      if (activeCard) {
+        activeCard.classList.add("active");
+        console.log(`⭐ Highlighted group ID: ${groupId}`);
+      }
+    }
+  }
+
+  setupClearButton() {
+    const clearButton = document.querySelector(".action-button.clear");
+    if (clearButton) {
+      clearButton.addEventListener("click", () => {
+        this.stopAllSounds();
+      });
+    }
+  }
+
+  setupGlobalVolumeControl() {
+    const globalSlider = document.getElementById("global-volume");
+    const globalIcon = document.getElementById("global-volume-icon");
+
+    if (!globalSlider || !globalIcon) return;
+
+    this.globalVolume = globalSlider.value / 100;
+
+    globalSlider.addEventListener("input", (e) => {
+      this.globalVolume = e.target.value / 100;
+      this.updateAllVolumes();
+      globalIcon.style.opacity = this.globalVolume === 0 ? "0.5" : "1";
+    });
+
+    globalIcon.addEventListener("click", () => {
+      if (this.globalVolume > 0) {
+        this.previousVolume = this.globalVolume;
+        this.globalVolume = 0;
+        globalSlider.value = 0;
+      } else {
+        this.globalVolume = this.previousVolume || 0.5;
+        globalSlider.value = this.globalVolume * 100;
+      }
+      this.updateAllVolumes();
+      globalIcon.style.opacity = this.globalVolume === 0 ? "0.5" : "1";
+    });
+
+    // Initialize slider thumb for global volume
+    setTimeout(() => {
+      this.initSliderThumbEffect();
+    }, 100);
+  }
+
+  updateAllVolumes() {
+    this.sounds.forEach((audio, soundName) => {
+      const soundContainer = document.querySelector(
+        `[data-sound-name="${soundName}"]`
+      );
+      if (!soundContainer) return;
+
+      const volumeSlider = soundContainer.querySelector(".volume-slider");
+      if (volumeSlider) {
+        const individualVolume = volumeSlider.value / 100;
+        audio.volume = individualVolume * this.globalVolume;
+      }
+    });
+  }
+
+  setupThemeToggle() {
+    const themeToggle = document.getElementById("theme-toggle");
+    if (!themeToggle) return;
+
+    themeToggle.addEventListener("click", () => {
+      const html = document.documentElement;
+      const currentTheme = html.getAttribute("data-theme");
+      const newTheme = currentTheme === "dark" ? "light" : "dark";
+      html.setAttribute("data-theme", newTheme);
+      localStorage.setItem("theme", newTheme);
+    });
+
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme) {
+      document.documentElement.setAttribute("data-theme", savedTheme);
+    }
+  }
+
+  setupUserMenu() {
     const userMenuButton = document.getElementById("user-menu-button");
     const userDropdown = document.getElementById("user-dropdown");
 
-    if (userMenuButton && userDropdown) {
-      // Toggle dropdown on button click
-      userMenuButton.addEventListener("click", (e) => {
-        e.stopPropagation();
-        userDropdown.classList.toggle("show");
-      });
+    if (!userMenuButton || !userDropdown) return;
 
-      // Close dropdown when clicking outside
-      document.addEventListener("click", (e) => {
-        if (
-          !userMenuButton.contains(e.target) &&
-          !userDropdown.contains(e.target)
-        ) {
-          userDropdown.classList.remove("show");
-        }
-      });
+    userMenuButton.addEventListener("click", (e) => {
+      e.stopPropagation();
+      userDropdown.classList.toggle("show");
+    });
 
-      // Close dropdown on Escape key
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && userDropdown.classList.contains("show")) {
-          userDropdown.classList.remove("show");
-        }
-      });
+    document.addEventListener("click", (e) => {
+      if (
+        !userDropdown.contains(e.target) &&
+        !userMenuButton.contains(e.target)
+      ) {
+        userDropdown.classList.remove("show");
+      }
+    });
 
-      // Close dropdown when clicking on dropdown items
-      const dropdownItems = userDropdown.querySelectorAll(".dropdown-item");
-      dropdownItems.forEach((item) => {
-        item.addEventListener("click", () => {
-          userDropdown.classList.remove("show");
-        });
-      });
-    }
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") userDropdown.classList.remove("show");
+    });
+  }
 
-    // Playlist Carousel Logic
+  setupCarousel() {
     const scrollLeftBtn = document.getElementById("scroll-left");
     const scrollRightBtn = document.getElementById("scroll-right");
-    const playlistCarousel = document.querySelector(".playlist-carousel");
+    const carousel = document.querySelector(".playlist-carousel");
 
-    if (scrollLeftBtn && scrollRightBtn && playlistCarousel) {
-      const cardWidth = 200;
-      const gap = 24;
-      const scrollAmount = (cardWidth + gap) * 1;
+    if (!scrollLeftBtn || !scrollRightBtn || !carousel) return;
 
-      scrollLeftBtn.addEventListener("click", () => {
-        playlistCarousel.scrollBy({ left: -scrollAmount, behavior: "smooth" });
-      });
+    scrollLeftBtn.addEventListener("click", () => {
+      carousel.scrollBy({ left: -300, behavior: "smooth" });
+    });
 
-      scrollRightBtn.addEventListener("click", () => {
-        playlistCarousel.scrollBy({ left: scrollAmount, behavior: "smooth" });
-      });
-
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "ArrowLeft") {
-          playlistCarousel.scrollBy({
-            left: -scrollAmount,
-            behavior: "smooth",
-          });
-        } else if (e.key === "ArrowRight") {
-          playlistCarousel.scrollBy({ left: scrollAmount, behavior: "smooth" });
-        }
-      });
-
-      const updateArrowVisibility = () => {
-        const { scrollLeft, scrollWidth, clientWidth } = playlistCarousel;
-        scrollLeftBtn.style.opacity = scrollLeft > 0 ? "1" : "0.5";
-        scrollRightBtn.style.opacity =
-          scrollLeft < scrollWidth - clientWidth - 1 ? "1" : "0.5";
-      };
-
-      playlistCarousel.addEventListener("scroll", updateArrowVisibility);
-      updateArrowVisibility();
-    }
+    scrollRightBtn.addEventListener("click", () => {
+      carousel.scrollBy({ left: 300, behavior: "smooth" });
+    });
   }
+}
+
+// Toast message handling
+function setupToasts() {
+  const toasts = document.querySelectorAll(".toast");
+  toasts.forEach((toast) => {
+    const closeBtn = toast.querySelector(".toast-close");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", () => {
+        toast.remove();
+      });
+    }
+
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      toast.style.transform = "translateY(-10px)";
+      setTimeout(() => toast.remove(), 300);
+    }, 5000);
+  });
+}
+
+// Initialize everything
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("🚀 Calm Flow initializing...");
+  window.soundManager = new SoundManager();
+  setupToasts();
+  console.log("🎉 Calm Flow ready!");
 });

@@ -479,7 +479,7 @@ body {
 }
 
 .sound-button-container.premium::after {
-  content: "This sound is a premium feature";
+  content: "Login Required.";
   position: absolute;
   bottom: 110%;
   left: 50%;

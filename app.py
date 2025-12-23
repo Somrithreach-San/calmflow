@@ -1,281 +1,57 @@
+# app.py
 from flask import Flask, render_template, jsonify, send_file, request, redirect, url_for, session, flash
-from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash, check_password_hash
 from pathlib import Path
 import os
 from datetime import datetime
+from models import db, User, Sound, Group, Playlist
 
 app = Flask(__name__)
-app.secret_key = 'your-secret-key-here-change-this-in-production'
+app.secret_key = 'calmflow-secret-key-change-in-production'
 
-# --- IMPORTANT: CONFIGURE YOUR DATABASE CONNECTION ---
+# --- DATABASE CONFIGURATION ---
 SERVER = 'localhost\\SQLEXPRESS'
 DATABASE = 'calmflow_db'
 
 app.config['SQLALCHEMY_DATABASE_URI'] = f'mssql+pyodbc://@{SERVER}/{DATABASE}?driver=ODBC+Driver+18+for+SQL+Server&Trusted_Connection=yes&TrustServerCertificate=yes'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
-
-# --- DATA MODELS ---
-
-# Use the existing table name 'playlist_sound' instead of 'sound_group'
-playlist_sound_association = db.Table('playlist_sound',
-    db.Column('playlist_id', db.Integer, db.ForeignKey('playlists.id'), primary_key=True),
-    db.Column('sound_id', db.Integer, db.ForeignKey('sounds.id'), primary_key=True)
-)
-
-# Sound Group association (your existing 'sound_group' table)
-sound_group_association = db.Table('sound_group',
-    db.Column('sound_id', db.Integer, db.ForeignKey('sounds.id'), primary_key=True),
-    db.Column('group_id', db.Integer, db.ForeignKey('groups.id'), primary_key=True)
-)
-
-# User Model - updated to match existing schema
-class User(db.Model):
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), nullable=True)  # Make nullable since it doesn't exist yet
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(256), nullable=False)
-    is_premium = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, server_default=db.func.now(), nullable=True)  # Make nullable
-
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
-
-class Sound(db.Model):
-    __tablename__ = 'sounds'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), unique=True, nullable=False)
-    display_name = db.Column(db.String(50), nullable=False)
-    icon = db.Column(db.String(255), nullable=False)
-    file_path = db.Column(db.String(255), nullable=False)
-    default_volume = db.Column(db.Float, default=0.5)
-    category = db.Column(db.String(50))
-    is_premium = db.Column(db.Boolean, default=False)
-    
-    # Both relationships for compatibility
-    groups = db.relationship("Group", secondary=sound_group_association, back_populates="sounds")
-    playlists = db.relationship("Playlist", secondary=playlist_sound_association, back_populates="sounds")
-
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'name': self.name,
-            'display_name': self.display_name,
-            'icon': self.icon,
-            'file_path': f'/sounds/{self.file_path}',
-            'default_volume': self.default_volume,
-            'category': self.category,
-            'is_premium': self.is_premium,
-            'groups': [group.id for group in self.groups]
-        }
-
-class Group(db.Model):
-    __tablename__ = 'groups'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    playlist_icon = db.Column(db.String(255))
-    sounds = db.relationship("Sound", secondary=sound_group_association, back_populates="groups")
-
-class Playlist(db.Model):
-    __tablename__ = 'playlists'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    playlist_icon = db.Column(db.String(255))
-    sounds = db.relationship("Sound", secondary=playlist_sound_association, back_populates="playlists")
-
-def add_missing_columns():
-    """Add missing columns to existing tables"""
-    with app.app_context():
-        from sqlalchemy import text
-        
-        try:
-            # Check if username column exists in users table
-            result = db.session.execute(text("""
-                SELECT COLUMN_NAME 
-                FROM INFORMATION_SCHEMA.COLUMNS 
-                WHERE TABLE_NAME = 'users' AND COLUMN_NAME = 'username'
-            """))
-            
-            if not result.fetchone():
-                print("Adding username column to users table...")
-                db.session.execute(text("ALTER TABLE users ADD username NVARCHAR(80)"))
-            
-            # Check if created_at column exists in users table
-            result = db.session.execute(text("""
-                SELECT COLUMN_NAME 
-                FROM INFORMATION_SCHEMA.COLUMNS 
-                WHERE TABLE_NAME = 'users' AND COLUMN_NAME = 'created_at'
-            """))
-            
-            if not result.fetchone():
-                print("Adding created_at column to users table...")
-                db.session.execute(text("ALTER TABLE users ADD created_at DATETIME DEFAULT GETDATE()"))
-            
-            db.session.commit()
-            print("Database schema updated successfully!")
-        except Exception as e:
-            print(f"Error updating schema: {e}")
-            db.session.rollback()
-
-def seed_data():
-    with app.app_context():
-        print("=" * 50)
-        print("Starting database check...")
-        
-        # --- 1. Check and seed Groups ---
-        groups_data = {
-            'nature': ('Nature', 'static/icons/leaf.png'),
-            'sleep': ('Sleep', 'static/icons/night.png'),
-            'focus': ('Focus', 'static/icons/productive.png'),
-            'relax': ('Relax', 'static/icons/relax.png'),
-            'city': ('City', 'static/icons/train.png')
-        }
-        
-        groups_dict = {}
-        existing_groups_count = 0
-        new_groups_count = 0
-        
-        for key, (name, icon) in groups_data.items():
-            group = Group.query.filter_by(name=name).first()
-            if not group:
-                group = Group(name=name, playlist_icon=icon)
-                db.session.add(group)
-                new_groups_count += 1
-                print(f"✓ Created new group: {name}")
-            else:
-                existing_groups_count += 1
-                print(f"✓ Group exists: {name}")
-            groups_dict[key] = group
-        
-        if new_groups_count > 0:
-            db.session.commit()
-            print(f"Committed {new_groups_count} new groups to database.")
-        
-        # --- 2. Check and seed Sounds ---
-        sounds_data = [
-            {'name': 'rain', 'display_name': 'Rain', 'icon': 'static/icons/rain.png', 
-             'file_path': 'rain.mp3', 'category': 'nature', 'is_premium': False},
-            {'name': 'forest', 'display_name': 'Forest', 'icon': 'static/icons/forest.png', 
-             'file_path': 'Forest.mp3', 'category': 'nature', 'is_premium': False},
-            {'name': 'fire', 'display_name': 'Fire', 'icon': 'static/icons/fire.png', 
-             'file_path': 'fire.mp3', 'category': 'nature', 'is_premium': False},
-            {'name': 'cafe', 'display_name': 'Cafe', 'icon': 'static/icons/cafe.png', 
-             'file_path': 'cafe.mp3', 'category': 'ambient', 'is_premium': False},
-            {'name': 'fan', 'display_name': 'Fan', 'icon': 'static/icons/fan.png', 
-             'file_path': 'fan.mp3', 'category': 'objects', 'is_premium': False},
-            {'name': 'leaves', 'display_name': 'Leaves', 'icon': 'static/icons/leaf.png', 
-             'file_path': 'leaf.mp3', 'category': 'nature', 'is_premium': False},
-            {'name': 'night', 'display_name': 'Night', 'icon': 'static/icons/night.png', 
-             'file_path': 'night.mp3', 'category': 'nature', 'is_premium': False},
-            {'name': 'riverstream', 'display_name': 'River Stream', 'icon': 'static/icons/riverstream.png', 
-             'file_path': 'riverstream.mp3', 'category': 'nature', 'is_premium': False},
-            {'name': 'seaside', 'display_name': 'Seaside', 'icon': 'static/icons/wave.png', 
-             'file_path': 'seaside.mp3', 'category': 'nature', 'is_premium': False},
-            {'name': 'snowing', 'display_name': 'Snowing', 'icon': 'static/icons/snowing.png', 
-             'file_path': 'snowing.mp3', 'category': 'nature', 'is_premium': False},
-            {'name': 'thunder', 'display_name': 'Thunder', 'icon': 'static/icons/thunder.png', 
-             'file_path': 'thunder.mp3', 'category': 'nature', 'is_premium': False},
-            {'name': 'train', 'display_name': 'Train', 'icon': 'static/icons/train.png', 
-             'file_path': 'train.mp3', 'category': 'ambient', 'is_premium': False},
-            {'name': 'underwater', 'display_name': 'Underwater', 'icon': 'static/icons/underwater.png', 
-             'file_path': 'underwater.mp3', 'category': 'ambient', 'is_premium': False},
-            {'name': 'washingmachine', 'display_name': 'Washing Machine', 'icon': 'static/icons/washingmachine.png', 
-             'file_path': 'washingmachine.mp3', 'category': 'objects', 'is_premium': False},
-            {'name': 'wind', 'display_name': 'Wind', 'icon': 'static/icons/wind.png', 
-             'file_path': 'wind.mp3', 'category': 'nature', 'is_premium': False},
-            {'name': 'windchime', 'display_name': 'Wind Chime', 'icon': 'static/icons/windchime.png', 
-             'file_path': 'windchime.mp3', 'category': 'objects', 'is_premium': False}
-        ]
-        
-        # Dictionary to store sound objects for relationship mapping
-        sounds_dict = {}
-        existing_sounds_count = 0
-        new_sounds_count = 0
-        
-        for sound_data in sounds_data:
-            sound = Sound.query.filter_by(name=sound_data['name']).first()
-            if not sound:
-                sound = Sound(**sound_data)
-                db.session.add(sound)
-                new_sounds_count += 1
-                print(f"✓ Created new sound: {sound_data['display_name']}")
-            else:
-                existing_sounds_count += 1
-                print(f"✓ Sound exists: {sound_data['display_name']}")
-            sounds_dict[sound_data['name']] = sound
-        
-        if new_sounds_count > 0:
-            db.session.commit()
-            print(f"Committed {new_sounds_count} new sounds to database.")
-        
-        # --- 3. Create relationships ONLY for NEW sounds ---
-        if new_sounds_count > 0:
-            print("Setting up relationships for new sounds...")
-            relationships = {
-                'rain': ['nature', 'sleep', 'relax'],
-                'forest': ['nature', 'relax'],
-                'fire': ['nature', 'relax'],
-                'cafe': ['city', 'focus'],
-                'fan': ['sleep', 'focus'],
-                'leaves': ['nature'],
-                'night': ['sleep', 'nature'],
-                'riverstream': ['nature', 'relax', 'focus'],
-                'seaside': ['nature', 'relax'],
-                'snowing': ['nature', 'sleep'],
-                'thunder': ['nature'],
-                'train': ['city', 'focus'],
-                'underwater': ['relax'],
-                'washingmachine': ['sleep'],
-                'wind': ['nature', 'sleep'],
-                'windchime': ['relax']
-            }
-            
-            # Apply relationships only to new sounds
-            for sound_name, group_names in relationships.items():
-                if sound_name in sounds_dict:
-                    sound = sounds_dict[sound_name]
-                    # Only add relationships if sound is new (has no groups)
-                    if not sound.groups:
-                        for group_name in group_names:
-                            if group_name in groups_dict:
-                                sound.groups.append(groups_dict[group_name])
-                                print(f"  Added {sound.display_name} to {group_name} group")
-            
-            db.session.commit()
-        
-        # --- 4. Summary ---
-        print("=" * 50)
-        print("DATABASE CHECK COMPLETE")
-        print("=" * 50)
-        print(f"Groups: {existing_groups_count} existing, {new_groups_count} new")
-        print(f"Sounds: {existing_sounds_count} existing, {new_sounds_count} new")
-        
-        if new_groups_count == 0 and new_sounds_count == 0:
-            print("✓ All data already exists in database.")
-        else:
-            print("✓ Database updated with missing data.")
-        print("=" * 50)
+# Initialize database
+db.init_app(app)
 
 # --- ROUTES ---
 
 @app.route('/')
 def index():
-    # User can access without login
-    sounds = Sound.query.all()  # Changed from filter_by(is_premium=False).all()
-    groups = Group.query.all()
-    sound_dicts = [sound.to_dict() for sound in sounds]
+    # Get all sounds
+    sounds = Sound.query.all()
+    
+    # Get ONLY the 5 groups we want: Nature, Sleep, Focus, Relax, City
+    allowed_groups = ['Nature', 'Sleep', 'Focus', 'Relax', 'City']
+    groups = Group.query.filter(Group.name.in_(allowed_groups)).order_by(Group.id).all()
+    
+    # Debug output - shows what's actually being sent to template
+    print("\n" + "="*50)
+    print("DEBUG: Groups being sent to template:")
+    for group in groups:
+        sound_names = [s.display_name for s in group.sounds[:3]]
+        premium_count = sum(1 for s in group.sounds if s.is_premium)
+        free_count = len(group.sounds) - premium_count
+        print(f"  {group.id}. {group.name}: {len(group.sounds)} sounds ({free_count} free, {premium_count} premium)")
+        if group.sounds:
+            print(f"     Example sounds: {', '.join(sound_names)}" + ("..." if len(group.sounds) > 3 else ""))
+    print("="*50 + "\n")
     
     # Check if user is logged in
     user = None
     if 'user_id' in session:
         user = User.query.get(session['user_id'])
+    
+    # Prepare sound data with access permissions
+    sound_dicts = []
+    for sound in sounds:
+        sound_dict = sound.to_dict()
+        sound_dict['user_can_access'] = (user is not None) or (not sound.is_premium)
+        sound_dicts.append(sound_dict)
     
     return render_template('index.html', 
                          sounds=sound_dicts, 
@@ -284,7 +60,6 @@ def index():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # If user is already logged in, redirect to home
     if 'user_id' in session:
         flash('You are already logged in', 'info')
         return redirect(url_for('index'))
@@ -306,7 +81,6 @@ def login():
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    # If user is already logged in, redirect to home
     if 'user_id' in session:
         flash('You are already logged in', 'info')
         return redirect(url_for('index'))
@@ -316,13 +90,11 @@ def signup():
         email = request.form['email']
         password = request.form['password']
         
-        # Check if user already exists
         if User.query.filter_by(email=email).first():
             flash('Email already registered', 'error')
         elif User.query.filter_by(username=username).first():
             flash('Username already taken', 'error')
         else:
-            # Create new user
             new_user = User(username=username, email=email)
             new_user.set_password(password)
             db.session.add(new_user)
@@ -353,10 +125,46 @@ def user_profile():
     
     return render_template('user_profile.html', user=user)
 
+@app.route('/delete-account', methods=['POST'])
+def delete_account():
+    if 'user_id' not in session:
+        flash('You must be logged in to delete your account', 'error')
+        return redirect(url_for('login'))
+    
+    user = User.query.get(session['user_id'])
+    if not user:
+        flash('User not found', 'error')
+        return redirect(url_for('logout'))
+    
+    password = request.form.get('password')
+    if not password or not user.check_password(password):
+        flash('Incorrect password', 'error')
+        return redirect(url_for('user_profile'))
+    
+    try:
+        db.session.delete(user)
+        db.session.commit()
+        session.pop('user_id', None)
+        flash('Your account has been deleted successfully', 'success')
+        return redirect(url_for('index'))
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting account: {str(e)}', 'error')
+        return redirect(url_for('user_profile'))
+
 @app.route('/api/sounds')
 def get_sounds():
-    sounds = Sound.query.all()  # Changed from filter_by(is_premium=False).all()
-    sound_list = [sound.to_dict() for sound in sounds]
+    user = None
+    if 'user_id' in session:
+        user = User.query.get(session['user_id'])
+    
+    sounds = Sound.query.all()
+    sound_list = []
+    for sound in sounds:
+        sound_dict = sound.to_dict()
+        sound_dict['user_can_access'] = (user is not None) or (not sound.is_premium)
+        sound_list.append(sound_dict)
+    
     return jsonify(sound_list)
 
 @app.route('/sounds/<path:filename>')
@@ -367,15 +175,278 @@ def serve_sound(filename):
     except FileNotFoundError:
         return jsonify({'error': 'Sound file not found'}), 404
 
-if __name__ == '__main__':
-    with app.app_context():
-        # Add missing columns to existing tables
-        add_missing_columns()
+@app.route('/reset-db')
+def reset_db_route():
+    """Development only: Reset the database"""
+    if not app.debug:
+        return "Reset only allowed in debug mode", 403
+    
+    try:
+        # Run the reset function directly
+        from sqlalchemy import text
         
-        # Create tables if they don't exist (won't affect existing tables)
+        with app.app_context():
+            print("=" * 60)
+            print("RESETTING DATABASE...")
+            print("=" * 60)
+            
+            # Disable foreign key constraints
+            print("Disabling foreign key constraints...")
+            db.session.execute(text("EXEC sp_MSforeachtable 'ALTER TABLE ? NOCHECK CONSTRAINT ALL'"))
+            
+            # Clear all data
+            print("Deleting all data...")
+            db.session.execute(text("DELETE FROM playlist_sound"))
+            db.session.execute(text("DELETE FROM sound_group"))
+            db.session.execute(text("DELETE FROM playlists"))
+            db.session.execute(text("DELETE FROM sounds"))
+            db.session.execute(text("DELETE FROM groups"))
+            db.session.execute(text("DELETE FROM users"))
+            
+            # Reset identity columns
+            print("Resetting identity columns...")
+            tables = ['users', 'sounds', 'groups', 'playlists']
+            for table in tables:
+                try:
+                    db.session.execute(text(f"DBCC CHECKIDENT ('{table}', RESEED, 0)"))
+                except:
+                    pass
+            
+            # Enable foreign key constraints
+            print("Enabling foreign key constraints...")
+            db.session.execute(text("EXEC sp_MSforeachtable 'ALTER TABLE ? CHECK CONSTRAINT ALL'"))
+            
+            db.session.commit()
+            print("✓ Database cleared")
+            
+            # Now seed fresh data with ONLY 5 groups
+            seed_fresh_data()
+        
+        return "Database reset successfully with 5 playlists! <a href='/'>Go to homepage</a>"
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+@app.route('/cleanup-unwanted-groups')
+def cleanup_unwanted_groups():
+    """Remove unwanted groups from existing database"""
+    if not app.debug:
+        return "Cleanup only allowed in debug mode", 403
+    
+    try:
+        from sqlalchemy import text
+        
+        # Groups to remove
+        unwanted_groups = ['Transport', 'Animals', 'Ambient', 'Objects']
+        
+        with app.app_context():
+            # First, remove relationships
+            for group_name in unwanted_groups:
+                group = Group.query.filter_by(name=group_name).first()
+                if group:
+                    # Delete sound-group relationships
+                    db.session.execute(
+                        text("DELETE FROM sound_group WHERE group_id = :group_id"),
+                        {"group_id": group.id}
+                    )
+                    # Delete the group
+                    db.session.delete(group)
+                    print(f"Removed group: {group_name}")
+            
+            db.session.commit()
+            
+        return "Unwanted groups removed successfully! <a href='/'>Go to homepage</a>"
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+# --- DATABASE SEEDING FUNCTIONS ---
+
+def seed_fresh_data():
+    """Seed fresh data with ONLY 5 groups"""
+    try:
+        print("\nSeeding fresh data with 5 playlists...")
+        
+        # --- 1. Create Groups (ONLY 5 GROUPS) ---
+        print("Creating 5 groups: Nature, Sleep, Focus, Relax, City")
+        groups_data = [
+            ('Nature', 'static/icons/leaf.png'),
+            ('Sleep', 'static/icons/night.png'),
+            ('Focus', 'static/icons/productive.png'),
+            ('Relax', 'static/icons/relax.png'),
+            ('City', 'static/icons/train.png'),
+        ]
+        
+        groups_dict = {}
+        for name, icon in groups_data:
+            group = Group(name=name, playlist_icon=icon)
+            db.session.add(group)
+            groups_dict[name.lower()] = group
+        
+        db.session.commit()
+        print(f"✓ Created {len(groups_data)} groups")
+        
+        # --- 2. Create Sounds ---
+        print("\nCreating sounds...")
+        sounds_data = [
+            # FREE SOUNDS (16)
+            {'name': 'rain', 'display_name': 'Rain', 'icon': 'static/icons/rain.png', 
+             'file_path': 'rain.mp3', 'category': 'nature', 'is_premium': False},
+            {'name': 'forest', 'display_name': 'Forest', 'icon': 'static/icons/forest.png', 
+             'file_path': 'Forest.mp3', 'category': 'nature', 'is_premium': False},
+            {'name': 'fire', 'display_name': 'Fire', 'icon': 'static/icons/fire.png', 
+             'file_path': 'fire.mp3', 'category': 'nature', 'is_premium': False},
+            {'name': 'cafe', 'display_name': 'Cafe', 'icon': 'static/icons/cafe.png', 
+             'file_path': 'cafe.mp3', 'category': 'city', 'is_premium': False},
+            {'name': 'fan', 'display_name': 'Fan', 'icon': 'static/icons/fan.png', 
+             'file_path': 'fan.mp3', 'category': 'focus', 'is_premium': False},
+            {'name': 'leaves', 'display_name': 'Leaves', 'icon': 'static/icons/leaf.png', 
+             'file_path': 'leaf.mp3', 'category': 'nature', 'is_premium': False},
+            {'name': 'night', 'display_name': 'Night', 'icon': 'static/icons/night.png', 
+             'file_path': 'night.mp3', 'category': 'nature', 'is_premium': False},
+            {'name': 'riverstream', 'display_name': 'River Stream', 'icon': 'static/icons/riverstream.png', 
+             'file_path': 'riverstream.mp3', 'category': 'nature', 'is_premium': False},
+            {'name': 'seaside', 'display_name': 'Seaside', 'icon': 'static/icons/wave.png', 
+             'file_path': 'seaside.mp3', 'category': 'nature', 'is_premium': False},
+            {'name': 'snowing', 'display_name': 'Snowing', 'icon': 'static/icons/snowing.png', 
+             'file_path': 'snowing.mp3', 'category': 'nature', 'is_premium': False},
+            {'name': 'thunder', 'display_name': 'Thunder', 'icon': 'static/icons/thunder.png', 
+             'file_path': 'thunder.mp3', 'category': 'nature', 'is_premium': False},
+            {'name': 'train', 'display_name': 'Train', 'icon': 'static/icons/train.png', 
+             'file_path': 'train.mp3', 'category': 'city', 'is_premium': False},
+            {'name': 'underwater', 'display_name': 'Underwater', 'icon': 'static/icons/underwater.png', 
+             'file_path': 'underwater.mp3', 'category': 'relax', 'is_premium': False},
+            {'name': 'washingmachine', 'display_name': 'Washing Machine', 'icon': 'static/icons/washingmachine.png', 
+             'file_path': 'washingmachine.mp3', 'category': 'sleep', 'is_premium': False},
+            {'name': 'wind', 'display_name': 'Wind', 'icon': 'static/icons/wind.png', 
+             'file_path': 'wind.mp3', 'category': 'nature', 'is_premium': False},
+            {'name': 'windchime', 'display_name': 'Wind Chime', 'icon': 'static/icons/windchime.png', 
+             'file_path': 'windchime.mp3', 'category': 'relax', 'is_premium': False},
+            
+            # PREMIUM SOUNDS (8)
+            {'name': 'airplane', 'display_name': 'Airplane', 'icon': 'static/icons/airplane.png', 
+             'file_path': 'airplane.mp3', 'category': 'city', 'is_premium': True},
+            {'name': 'bird', 'display_name': 'Bird', 'icon': 'static/icons/bird.png', 
+             'file_path': 'bird.mp3', 'category': 'nature', 'is_premium': True},
+            {'name': 'cat', 'display_name': 'Cat', 'icon': 'static/icons/cat.png', 
+             'file_path': 'cat.mp3', 'category': 'relax', 'is_premium': True},
+            {'name': 'classroom', 'display_name': 'Classroom', 'icon': 'static/icons/classroom.png', 
+             'file_path': 'classroom.mp3', 'category': 'focus', 'is_premium': True},
+            {'name': 'library', 'display_name': 'Library', 'icon': 'static/icons/library.png', 
+             'file_path': 'library.mp3', 'category': 'focus', 'is_premium': True},
+            {'name': 'rain_on_umbrella', 'display_name': 'Rain on Umbrella', 'icon': 'static/icons/umbrella.png', 
+             'file_path': 'umbrella.mp3', 'category': 'nature', 'is_premium': True},
+            {'name': 'ship', 'display_name': 'Ship', 'icon': 'static/icons/ship.png', 
+             'file_path': 'ship.mp3', 'category': 'relax', 'is_premium': True},
+            {'name': 'white_noise', 'display_name': 'White Noise', 'icon': 'static/icons/white_noise.png', 
+             'file_path': 'white_noise.mp3', 'category': 'sleep', 'is_premium': True},
+        ]
+        
+        sounds_dict = {}
+        for sound_data in sounds_data:
+            sound = Sound(**sound_data)
+            db.session.add(sound)
+            sounds_dict[sound_data['name']] = sound
+        
+        db.session.commit()
+        print(f"✓ Created {len(sounds_data)} sounds (16 free, 8 premium)")
+        
+        # --- 3. Create Relationships ---
+        print("\nCreating sound-group relationships...")
+        relationships = {
+            # FREE SOUNDS
+            'rain': ['nature', 'sleep', 'relax'],
+            'forest': ['nature', 'relax'],
+            'fire': ['nature', 'relax'],
+            'cafe': ['city', 'focus'],
+            'fan': ['sleep', 'focus'],
+            'leaves': ['nature'],
+            'night': ['sleep', 'nature'],
+            'riverstream': ['nature', 'relax', 'focus'],
+            'seaside': ['nature', 'relax'],
+            'snowing': ['nature', 'sleep'],
+            'thunder': ['nature'],
+            'train': ['city', 'focus'],
+            'underwater': ['relax'],
+            'washingmachine': ['sleep'],
+            'wind': ['nature', 'sleep'],
+            'windchime': ['relax'],
+            
+            # PREMIUM SOUNDS
+            'airplane': ['city'],
+            'bird': ['nature', 'relax'],
+            'cat': ['relax'],
+            'classroom': ['focus'],
+            'library': ['focus', 'relax'],
+            'rain_on_umbrella': ['nature', 'relax'],
+            'ship': ['relax'],
+            'white_noise': ['sleep', 'focus']
+        }
+        
+        relationship_count = 0
+        for sound_name, group_names in relationships.items():
+            if sound_name in sounds_dict:
+                sound = sounds_dict[sound_name]
+                for group_name in group_names:
+                    if group_name in groups_dict:
+                        sound.groups.append(groups_dict[group_name])
+                        relationship_count += 1
+        
+        db.session.commit()
+        print(f"✓ Created {relationship_count} sound-group relationships")
+        
+        # --- 4. Create a test user ---
+        print("\nCreating test user...")
+        test_user = User(
+            username='testuser',
+            email='test@example.com',
+            is_premium=True
+        )
+        test_user.set_password('password123')
+        db.session.add(test_user)
+        db.session.commit()
+        print("✓ Created test user: test@example.com / password123")
+        
+        print("\n" + "=" * 60)
+        print("✅ DATABASE SEEDED SUCCESSFULLY!")
+        print("Playlists: Nature, Sleep, Focus, Relax, City")
+        print("No Transport, Animals, Ambient, or Objects playlists created.")
+        print("=" * 60)
+        
+        return True
+        
+    except Exception as e:
+        print(f"Error during seeding: {e}")
+        db.session.rollback()
+        return False
+
+def cleanup_existing_unwanted_groups():
+    """Clean up any unwanted groups in existing database"""
+    unwanted_groups = ['Transport', 'Animals', 'Ambient', 'Objects']
+    for group_name in unwanted_groups:
+        group = Group.query.filter_by(name=group_name).first()
+        if group:
+            print(f"⚠ Warning: Found unwanted group '{group_name}' in database")
+            print("You can remove it by visiting: http://localhost:5000/cleanup-unwanted-groups")
+
+# --- INITIALIZATION ---
+
+def initialize_database():
+    """Initialize database on startup"""
+    with app.app_context():
+        # Create tables if they don't exist
         db.create_all()
         
-        # Seed data if needed
-        seed_data()
-        
-    app.run(debug=True)
+        # Check if we need to seed data
+        if Group.query.count() == 0:
+            print("Database is empty. Seeding initial data with 5 playlists...")
+            seed_fresh_data()
+        else:
+            # Remove any unwanted groups that might exist
+            cleanup_existing_unwanted_groups()
+            
+            group_count = Group.query.count()
+            sound_count = Sound.query.count()
+            print(f"Database already has {group_count} groups and {sound_count} sounds")
+
+if __name__ == '__main__':
+    initialize_database()
+    app.run(debug=True, port=5000)
