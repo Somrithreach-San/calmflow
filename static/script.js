@@ -23,6 +23,9 @@ class SoundManager {
           this.initializeSound(button, soundInfo);
         }
       });
+
+      // Initialize slider thumb neo-brutalist effect
+      this.initSliderThumbEffect();
     } catch (error) {
       console.error("Error initializing SoundManager:", error);
     }
@@ -58,6 +61,93 @@ class SoundManager {
           sound.audio.volume = newVolume * this.globalVolume;
         }
       }
+    });
+  }
+
+  initSliderThumbEffect() {
+    // Add neo-brutalist drag effect to all volume sliders
+    const volumeSliders = document.querySelectorAll(".volume-slider");
+
+    volumeSliders.forEach((slider) => {
+      let isThumbPressed = false;
+
+      // Helper function to check if event is on the thumb
+      const isThumbEvent = (e) => {
+        // For mouse events, check if target is the slider (thumb clicks go to slider)
+        if (e.type.includes("mouse") || e.type.includes("pointer")) {
+          const rect = slider.getBoundingClientRect();
+          const thumbWidth = 20; // Same as CSS thumb size
+          const thumbPosition =
+            (slider.value / 100) * (rect.width - thumbWidth);
+
+          // Check if click is within thumb area (with some padding)
+          const clickX = e.clientX - rect.left;
+          return (
+            clickX >= thumbPosition - 15 &&
+            clickX <= thumbPosition + thumbWidth + 15
+          );
+        }
+        // For touch events, it's harder to detect thumb specifically
+        return true; // Assume it's the thumb for touch events
+      };
+
+      // Mouse down - check if it's on the thumb
+      slider.addEventListener("mousedown", (e) => {
+        if (isThumbEvent(e)) {
+          isThumbPressed = true;
+          slider.classList.add("thumb-pressed");
+        }
+      });
+
+      // Mouse up - remove pressed state
+      slider.addEventListener("mouseup", () => {
+        if (isThumbPressed) {
+          isThumbPressed = false;
+          slider.classList.remove("thumb-pressed");
+        }
+      });
+
+      // Mouse leave - remove pressed state if mouse leaves while dragging
+      slider.addEventListener("mouseleave", () => {
+        if (isThumbPressed) {
+          isThumbPressed = false;
+          slider.classList.remove("thumb-pressed");
+        }
+      });
+
+      // Touch start
+      slider.addEventListener("touchstart", (e) => {
+        isThumbPressed = true;
+        slider.classList.add("thumb-pressed");
+      });
+
+      // Touch end
+      slider.addEventListener("touchend", () => {
+        isThumbPressed = false;
+        slider.classList.remove("thumb-pressed");
+      });
+
+      // Touch cancel
+      slider.addEventListener("touchcancel", () => {
+        isThumbPressed = false;
+        slider.classList.remove("thumb-pressed");
+      });
+
+      // Global mouse up to catch releases outside the slider
+      document.addEventListener("mouseup", () => {
+        if (isThumbPressed) {
+          isThumbPressed = false;
+          slider.classList.remove("thumb-pressed");
+        }
+      });
+
+      // Global touch end
+      document.addEventListener("touchend", () => {
+        if (isThumbPressed) {
+          isThumbPressed = false;
+          slider.classList.remove("thumb-pressed");
+        }
+      });
     });
   }
 
@@ -119,6 +209,24 @@ class SoundManager {
 document.addEventListener("DOMContentLoaded", () => {
   const soundManager = new SoundManager();
 
+  // --- THEME TOGGLE LOGIC ---
+  const themeToggleButton = document.getElementById("theme-toggle");
+  const docElement = document.documentElement;
+
+  const applyTheme = (theme) => {
+    docElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  };
+
+  const preferredTheme = localStorage.getItem("theme") || "light";
+  applyTheme(preferredTheme);
+
+  themeToggleButton.addEventListener("click", () => {
+    const currentTheme = docElement.getAttribute("data-theme");
+    const newTheme = currentTheme === "light" ? "dark" : "light";
+    applyTheme(newTheme);
+  });
+
   // Global Controls
   const clearButton = document.querySelector(".action-button.clear");
   const volumeIcon = document.getElementById("volume-icon");
@@ -126,9 +234,74 @@ document.addEventListener("DOMContentLoaded", () => {
 
   clearButton.addEventListener("click", () => soundManager.stopAllSounds());
 
-  globalVolumeSlider.addEventListener("input", (e) =>
-    soundManager.setGlobalVolume(e.target.value / 100)
-  );
+  if (globalVolumeSlider) {
+    globalVolumeSlider.addEventListener("input", (e) =>
+      soundManager.setGlobalVolume(e.target.value / 100)
+    );
+
+    // Add neo-brutalist effect to global volume slider too
+    let isThumbPressedGlobal = false;
+
+    // Mouse down
+    globalVolumeSlider.addEventListener("mousedown", (e) => {
+      const rect = globalVolumeSlider.getBoundingClientRect();
+      const thumbWidth = 20;
+      const thumbPosition =
+        (globalVolumeSlider.value / 100) * (rect.width - thumbWidth);
+      const clickX = e.clientX - rect.left;
+
+      // Check if click is within thumb area
+      if (
+        clickX >= thumbPosition - 15 &&
+        clickX <= thumbPosition + thumbWidth + 15
+      ) {
+        isThumbPressedGlobal = true;
+        globalVolumeSlider.classList.add("thumb-pressed");
+      }
+    });
+
+    // Mouse up
+    globalVolumeSlider.addEventListener("mouseup", () => {
+      if (isThumbPressedGlobal) {
+        isThumbPressedGlobal = false;
+        globalVolumeSlider.classList.remove("thumb-pressed");
+      }
+    });
+
+    // Mouse leave
+    globalVolumeSlider.addEventListener("mouseleave", () => {
+      if (isThumbPressedGlobal) {
+        isThumbPressedGlobal = false;
+        globalVolumeSlider.classList.remove("thumb-pressed");
+      }
+    });
+
+    // Touch events
+    globalVolumeSlider.addEventListener("touchstart", () => {
+      isThumbPressedGlobal = true;
+      globalVolumeSlider.classList.add("thumb-pressed");
+    });
+
+    globalVolumeSlider.addEventListener("touchend", () => {
+      isThumbPressedGlobal = false;
+      globalVolumeSlider.classList.remove("thumb-pressed");
+    });
+
+    // Global cleanup
+    document.addEventListener("mouseup", () => {
+      if (isThumbPressedGlobal) {
+        isThumbPressedGlobal = false;
+        globalVolumeSlider.classList.remove("thumb-pressed");
+      }
+    });
+
+    document.addEventListener("touchend", () => {
+      if (isThumbPressedGlobal) {
+        isThumbPressedGlobal = false;
+        globalVolumeSlider.classList.remove("thumb-pressed");
+      }
+    });
+  }
 
   // Playlist Playback Logic
   const playlistCards = document.querySelectorAll(".playlist-card");

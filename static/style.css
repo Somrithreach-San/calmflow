@@ -1,13 +1,23 @@
-/* --- GLOBAL STYLES & FONT IMPORT --- */
 :root {
   --background-primary: #f0f1f3;
-  --background-secondary: #ffffff; /* White for all buttons */
-  --text-primary: #212529; /* Dark primary text */
+  --background-secondary: #ffffff;
+  --text-primary: #212529;
   --text-on-accent: #181a1b;
-  --accent-color: #ffffff; /* Minty green for accent */
-  --shadow-color: #0d2438; /* Dark blue from example */
-  --border-color: #0d2438; /* Dark blue for Neubrutalism */
-  --border-color-light: #dee2e6; /* Light grey for other borders */
+  --accent-color: #f0f1f3;
+  --shadow-color: #0d2438;
+  --border-color: #0d2438;
+  --border-color-light: #dee2e6;
+}
+
+[data-theme="dark"] {
+  --background-primary: #393e46;
+  --background-secondary: #2e3238;
+  --text-primary: #e9ecef;
+  --text-on-accent: #000000;
+  --accent-color: #00ff99;
+  --shadow-color: #ffffff;
+  --border-color: #ffffff;
+  --border-color-light: #495057;
 }
 
 * {
@@ -25,9 +35,9 @@ body {
 }
 
 .site-container {
-  max-width: 1250px; /* Decreased from 1400px to bring items closer */
+  max-width: 1250px;
   margin: 0 auto;
-  padding: 0 2rem; /* Slightly decreased padding */
+  padding: 0 2rem;
 }
 
 /* --- HEADER & TITLES --- */
@@ -36,16 +46,19 @@ body {
   border-bottom: 1px solid var(--border-color-light);
   margin-bottom: 2rem;
 }
+
 .header-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
 .logo,
 .section-title {
   font-family: "Aristotelica Display Trial", "Inter", sans-serif;
   font-weight: 700;
 }
+
 .logo {
   font-size: 1.75rem;
   text-decoration: none;
@@ -61,27 +74,25 @@ body {
 .playlists-header,
 .sounds-header {
   display: flex;
-  align-items: flex-start; /* Changed from center to flex-start */
+  align-items: flex-start;
   padding-bottom: 1.5rem;
-  flex-direction: column; /* Stack title and button vertically */
+  flex-direction: column;
 }
 
 .playlists-section {
-  margin-bottom: 5rem; /* Increased from 1rem to create bigger gap */
+  margin-bottom: 5rem;
 }
 
 .sounds-section {
   margin-bottom: 1rem;
 }
 
-/* Section title positioning */
 .playlists-header .section-title,
 .sounds-header .section-title {
   margin-bottom: 0.5rem;
-  padding-left: 50px; /* Align with arrows */
+  padding-left: 50px;
 }
 
-/* Clear button positioning */
 .sounds-header {
   position: relative;
 }
@@ -94,67 +105,62 @@ body {
   font-size: 1rem;
   font-weight: 700;
   padding: 1.25rem;
-  background-color: var(--background-secondary);
-  color: var(--text-primary);
 }
 
-/* --- NEUBRUTALIST BUTTON STYLE (PLAYLISTS & ACTIONS) --- */
+/* --- NEUBRUTALIST ELEMENTS --- */
 .playlist-card,
 .action-button.clear,
-.arrow-btn {
+.arrow-btn,
+.sound-button-container.premium::after,
+.volume-slider::-webkit-slider-thumb,
+.volume-slider::-moz-range-thumb,
+.user-dropdown {
   background-color: var(--background-secondary);
   border: 2px solid var(--border-color);
   border-radius: 12px;
   box-shadow: 4px 4px 0px 0px var(--shadow-color);
+  color: var(--text-primary);
   transition: transform 0.15s ease, box-shadow 0.15s ease,
     background-color 0.15s ease;
-  cursor: pointer;
-  text-decoration: none;
-  color: var(--text-primary);
-  text-align: center;
 }
 
-/* Playlist card specific styles - Increased size */
+.playlist-card,
+.action-button.clear,
+.arrow-btn {
+  cursor: pointer;
+}
+
 .playlist-card {
-  padding: 1.5rem 1.25rem; /* Increased padding for more space */
-  width: 200px; /* Fixed width for consistent sizing */
-  height: 180px; /* Fixed height for consistent sizing */
+  padding: 1.5rem 1.25rem;
+  width: 200px;
+  height: 180px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  flex-shrink: 0; /* Prevent cards from shrinking */
+  flex-shrink: 0;
   scroll-snap-align: start;
+  text-decoration: none;
+  text-align: center;
 }
 
-/* Action button specific styles */
 .action-button.clear,
 .arrow-btn {
   padding: 1rem 1.25rem;
 }
 
-/* Hover effects for all buttons */
 .playlist-card:hover,
 .action-button.clear:hover,
 .arrow-btn:hover {
   transform: translateY(-2px) translateX(-2px);
   box-shadow: 6px 6px 0px 0px var(--shadow-color);
-  background-color: #ffffff; /* Same hover color for all */
-  color: var(--text-on-accent);
 }
 
-/* Active state for all buttons */
 .playlist-card:active,
 .action-button.clear:active,
 .arrow-btn:active {
   transform: translateY(4px) translateX(4px);
   box-shadow: 0px 0px 0px 0px var(--shadow-color);
-}
-
-/* Active state for playlist cards */
-.playlist-card.active {
-  background-color: var(--accent-color);
-  color: var(--text-on-accent);
 }
 
 /* --- SOUND BUTTONS (ICON-ONLY) --- */
@@ -167,124 +173,134 @@ body {
   cursor: pointer;
   transition: none;
 }
+
 .sound-button:hover,
 .sound-button:active {
   transform: none;
   box-shadow: none;
 }
+
 .sound-button.active {
   background: transparent;
 }
 
 /* --- ICON STYLES --- */
 .playlist-card .icon-img {
-  filter: grayscale(100%) brightness(0.2); /* Makes icons black */
   transition: filter 0.2s ease, transform 0.2s ease;
+  max-width: 50px;
+  height: 50px;
+  margin: 0 auto 1rem;
+  filter: grayscale(100%) brightness(0.2);
 }
 
-/* Playlist card icons stay black when hovered or active */
+/* MODIFIED: Dark theme icons are white */
+[data-theme="dark"] .playlist-card .icon-img {
+  filter: brightness(0) invert(1);
+}
+
 .playlist-card:hover .icon-img,
 .playlist-card.active .icon-img {
-  filter: grayscale(100%) brightness(0.2); /* Stay black */
+  filter: grayscale(100%) brightness(0.2);
 }
 
-/* Sound icons stay black even when active */
+/* MODIFIED: Dark theme hover/active icons stay white */
+[data-theme="dark"] .playlist-card:hover .icon-img,
+[data-theme="dark"] .playlist-card.active .icon-img {
+  filter: brightness(0) invert(1);
+}
+
 .sound-button .sound-icon {
   max-width: 65px;
   height: 65px;
   margin: 0;
-  filter: brightness(0) invert(0); /* Black icons always */
   transition: transform 0.2s ease;
-}
-.sound-button:hover .sound-icon {
-  transform: scale(1.1);
-}
-.sound-button.active .sound-icon {
-  filter: brightness(0) invert(0); /* Still black when active */
+  filter: brightness(0) invert(0);
 }
 
-.playlist-card .icon-img {
-  max-width: 50px; /* Increased from 40px */
-  height: 50px; /* Increased from 40px */
-  margin: 0 auto 1rem;
+[data-theme="dark"] .sound-button .sound-icon {
+  filter: brightness(0) invert(1);
+}
+
+.sound-button:hover .sound-icon {
+  transform: scale(1.1);
 }
 
 /* --- FONT STYLES --- */
 .playlist-title {
   font-family: "Aristotelica Display Trial", "Inter", sans-serif;
-  font-size: 1.1rem; /* Slightly increased font size */
+  font-size: 1.1rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text-primary-on-card, var(--text-primary));
 }
+
+/* MODIFIED: Dark theme text is white */
+[data-theme="dark"] .playlist-card .playlist-title {
+  color: white;
+}
+
+/* MODIFIED: Dark theme hover/active text stays white */
+[data-theme="dark"] .playlist-card:hover .playlist-title,
+[data-theme="dark"] .playlist-card.active .playlist-title {
+  color: white;
+}
+
 .sound-name {
   display: none;
 }
-.playlist-card.active .playlist-title {
-  color: var(--text-on-accent);
-}
-.playlist-card:hover .playlist-title {
-  color: var(--text-on-accent);
-}
 
-/* --- GRIDS --- */
+/* --- GRIDS & CAROUSELS --- */
 .playlist-grid {
-  display: flex; /* Use flex for better control */
-  gap: 24px; /* Increased gap for better spacing */
-  padding: 10px 0; /* Centering fix */
+  display: flex;
+  gap: 24px;
+  padding: 10px 0;
 }
 
-/* Show only 3 cards - container with adjusted width */
 .playlist-carousel-container {
-  width: 688px; /* Perfectly sized for 3 cards */
+  width: 688px;
   overflow: hidden;
   position: relative;
-  /* Remove any mask/fade effects */
   mask-image: none;
-  -webkit-mask-image: none;
 }
 
 .playlist-carousel {
+  display: flex;
+  gap: 24px;
   overflow-x: auto;
-  -ms-overflow-style: none;
   scrollbar-width: none;
-  padding: 10px 20px; /* Centering fix */
+  -ms-overflow-style: none;
+  padding: 10px 20px;
   width: 100%;
-  /* Ensure no overflow hint */
   mask-image: none;
-  -webkit-mask-image: none;
   scroll-snap-type: x mandatory;
-  scroll-padding-left: 20px; /* Centering fix */
+  scroll-padding-left: 20px;
 }
 .playlist-carousel::-webkit-scrollbar {
   display: none;
 }
 
-/* Increased gap between sound icons */
 .sound-buttons-grid {
   display: grid;
   grid-template-columns: repeat(4, 65px);
-  gap: 6rem; /* Increased from 5rem to 6rem */
+  gap: 6rem;
   justify-content: center;
   align-items: center;
 }
 
-/* --- CAROUSEL & BUTTONS --- */
 .carousel-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px; /* Slightly decreased from 1rem */
+  gap: 12px;
   position: relative;
 }
 
-/* Arrow buttons - positioned further away */
 .arrow-btn {
-  padding: 0.75rem 1rem; /* Increased horizontal padding */
+  padding: 0.75rem 1rem;
   font-size: 1.25rem;
   line-height: 1;
   flex-shrink: 0;
   transition: opacity 0.3s ease;
-  min-width: 50px; /* Increased minimum width */
+  min-width: 50px;
 }
 
 .sound-button-container {
@@ -304,12 +320,12 @@ body {
   visibility: hidden;
   transition: opacity 0.3s ease, visibility 0.3s ease;
 }
+
 .volume-control:not(.hidden) {
   opacity: 1;
   visibility: visible;
 }
 
-/* Volume slider for active sounds */
 .volume-slider {
   -webkit-appearance: none;
   appearance: none;
@@ -319,9 +335,9 @@ body {
   border-radius: 3px;
   outline: none;
   position: relative;
+  cursor: pointer;
 }
 
-/* The slider track - neubrutalism border */
 .volume-slider::before {
   content: "";
   position: absolute;
@@ -335,70 +351,47 @@ body {
   z-index: -1;
 }
 
-/* Slider thumb - neubrutalism styling */
-.volume-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 20px;
-  height: 20px;
-  background: var(--background-secondary); /* White background */
-  border: 2px solid var(--border-color); /* Dark blue border */
-  border-radius: 50%;
-  cursor: pointer;
-  box-shadow: 2px 2px 0px 0px var(--shadow-color);
-  transition: all 0.15s ease;
-  position: relative;
-}
-
-/* Hover effect for thumb */
-.volume-slider::-webkit-slider-thumb:hover {
-  background: var(--accent-color); /* Mint green on hover */
-  transform: translateY(-1px) translateX(-1px);
-  box-shadow: 3px 3px 0px 0px var(--shadow-color);
-}
-
-/* Active state for thumb */
-.volume-slider::-webkit-slider-thumb:active {
-  transform: translateY(1px) translateX(1px);
-  box-shadow: 1px 1px 0px 0px var(--shadow-color);
-}
-
-/* Firefox styles */
+.volume-slider::-webkit-slider-thumb,
 .volume-slider::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
-  background: var(--background-secondary); /* White background */
-  border: 2px solid var(--border-color); /* Dark blue border */
+  appearance: none;
+  width: 22px; /* Slightly larger for better visibility */
+  height: 22px;
   border-radius: 50%;
-  cursor: pointer;
-  box-shadow: 2px 2px 0px 0px var(--shadow-color);
-  transition: all 0.15s ease;
   position: relative;
+  background-color: var(--background-secondary);
+  border: 1.5px solid var(--border-color); /* Thinner border */
+  box-shadow: 2px 2px 0px 0px var(--shadow-color); /* Smaller shadow */
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+    background-color 0.15s ease, border 0.15s ease;
+  cursor: grab;
 }
 
-/* Hover effect for Firefox */
+.volume-slider::-webkit-slider-thumb:hover,
 .volume-slider::-moz-range-thumb:hover {
-  background: var(--accent-color); /* Mint green on hover */
-  transform: translateY(-1px) translateX(-1px);
-  box-shadow: 3px 3px 0px 0px var(--shadow-color);
+  transform: translateY(-1px) translateX(-1px); /* Smaller hover movement */
+  box-shadow: 3px 3px 0px 0px var(--shadow-color); /* Slightly larger shadow */
+  background-color: var(--accent-color);
+  border: 1.5px solid var(--accent-color); /* Change border color on hover */
 }
 
-/* Active state for Firefox */
-.volume-slider::-moz-range-thumb:active {
-  transform: translateY(1px) translateX(1px);
-  box-shadow: 1px 1px 0px 0px var(--shadow-color);
+/* MODIFIED: Subtler neo-brutalist click effect for slider thumb */
+.volume-slider.thumb-pressed::-webkit-slider-thumb,
+.volume-slider.thumb-pressed::-moz-range-thumb {
+  transform: translateY(2px) translateX(2px); /* Half the movement */
+  box-shadow: 0.5px 0.5px 0px 0px var(--shadow-color); /* Very subtle shadow */
+  cursor: grabbing;
 }
 
-/* --- FOOTER & VOLUME CONTROLS --- */
+/* --- FOOTER & GLOBAL VOLUME --- */
 .site-footer {
   text-align: center;
   padding: 3rem 0 1.5rem;
   margin-top: 2rem;
   border-top: 1px solid var(--border-color-light);
-  color: var(--text-secondary);
-  font-size: 1.3rem; /* Increased font size from 0.9rem */
-  font-family: "Aristotelica Display Trial", "Inter", sans-serif; /* Same font as rest of site */
-  font-weight: 600; /* Regular weight for footer */
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text-secondary, #adb5bd);
+  font-family: "Aristotelica Display Trial", "Inter", sans-serif;
 }
 
 .volume-control-container {
@@ -406,61 +399,50 @@ body {
   align-items: center;
   gap: 1rem;
 }
+
 .global-volume-icon {
   width: 28px;
   height: 28px;
   cursor: pointer;
-  filter: brightness(0) invert(0); /* Make volume icon black */
   transition: opacity 0.2s ease;
+  filter: brightness(0) invert(0);
 }
 .global-volume-icon:hover {
   opacity: 1;
 }
-
-/* Global volume slider - always visible */
-.global-slider {
-  width: 120px; /* Fixed width for global slider */
-  opacity: 1 !important; /* Force visible */
-  visibility: visible !important; /* Force visible */
-  display: block !important; /* Force visible */
+[data-theme="dark"] .global-volume-icon {
+  filter: brightness(0) invert(1);
 }
-.global-slider.hidden {
-  display: block !important; /* Override hidden class */
+
+.global-slider {
+  width: 120px;
   opacity: 1 !important;
   visibility: visible !important;
+  display: block !important;
 }
 
-/* --- PREMIUM SOUNDS --- */
+/* --- PREMIUM SOUNDS & TOOLTIP --- */
 .sound-button-container.premium {
   position: relative;
 }
-
 .sound-button-container.premium .sound-icon {
   opacity: 0.4;
   transition: opacity 0.2s ease;
 }
-
 .sound-button-container.premium .sound-button {
   cursor: not-allowed;
 }
-
 .sound-button-container.premium:hover .sound-icon {
   opacity: 1;
-  transform: scale(1.1); /* Keep the hover effect consistent */
+  transform: scale(1.1);
 }
 
-/* Tooltip for premium sounds - Neubrutalist Style */
 .sound-button-container.premium::after {
   content: "This sound is a premium feature";
   position: absolute;
   bottom: 110%;
   left: 50%;
   transform: translateX(-50%);
-  background-color: var(--background-secondary);
-  color: var(--text-primary);
-  border-radius: 12px;
-  border: 2px solid var(--border-color);
-  box-shadow: 4px 4px 0px 0px var(--shadow-color);
   padding: 1rem 1.5rem;
   font-family: "Aristotelica Display Trial", "Inter", sans-serif;
   font-size: 1.1rem;
@@ -472,8 +454,110 @@ body {
   pointer-events: none;
   z-index: 10;
 }
-
 .sound-button-container.premium:hover::after {
   opacity: 1;
   visibility: visible;
+}
+
+/* --- HEADER CONTROLS (USER & THEME) --- */
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-menu-container {
+  position: relative;
+}
+.user-menu-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.user-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
+}
+
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 160px;
+  z-index: 100;
+  display: none;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.user-dropdown.show {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.dropdown-item {
+  display: block;
+  padding: 0.75rem 1rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.dropdown-item:hover {
+  background-color: var(--accent-color);
+  color: var(--text-on-accent);
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: var(--border-color-light);
+  margin: 0.5rem 0;
+}
+
+/* --- THEME TOGGLE --- */
+.theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 34px;
+  height: 34px;
+}
+
+.theme-icon {
+  width: 24px;
+  height: 24px;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  position: absolute;
+}
+
+.sun {
+  transform: scale(1) rotate(0);
+  opacity: 1;
+  filter: brightness(0) invert(0);
+}
+
+.moon {
+  transform: scale(0) rotate(-90deg);
+  opacity: 0;
+}
+
+[data-theme="dark"] .sun {
+  transform: scale(0) rotate(90deg);
+  opacity: 0;
+}
+
+[data-theme="dark"] .moon {
+  transform: scale(1) rotate(0);
+  opacity: 1;
+  filter: brightness(0) invert(1);
 }

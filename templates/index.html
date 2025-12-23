@@ -19,21 +19,40 @@
       <header class="site-header">
         <div class="header-container">
           <a href="/" class="logo">Calm Flow</a>
-          <div class="volume-control-container">
-            <img
-              id="volume-icon"
-              src="/static/icons/volume.png"
-              alt="Volume"
-              class="global-volume-icon"
-            />
-            <input
-              id="global-volume-slider"
-              class="volume-slider global-slider hidden"
-              type="range"
-              min="0"
-              max="100"
-              value="50"
-            />
+          <div class="header-controls">
+            <div class="volume-control-container">
+              <img
+                id="volume-icon"
+                src="{{ url_for('static', filename='icons/volume.png') }}"
+                alt="Volume"
+                class="global-volume-icon"
+              />
+              <input
+                id="global-volume-slider"
+                class="volume-slider global-slider"
+                type="range"
+                min="0"
+                max="100"
+                value="50"
+              />
+            </div>
+            <button
+              type="button"
+              class="theme-toggle"
+              id="theme-toggle"
+              title="Toggle theme"
+            >
+              <img
+                src="{{ url_for('static', filename='icons/sun.png') }}"
+                alt="Sun"
+                class="theme-icon sun"
+              />
+              <img
+                src="{{ url_for('static', filename='icons/moon.png') }}"
+                alt="Moon"
+                class="theme-icon moon"
+              />
+            </button>
           </div>
         </div>
       </header>
