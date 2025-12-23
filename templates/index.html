@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -20,22 +20,7 @@
         <div class="header-container">
           <a href="/" class="logo">Calm Flow</a>
           <div class="header-controls">
-            <div class="volume-control-container">
-              <img
-                id="volume-icon"
-                src="{{ url_for('static', filename='icons/volume.png') }}"
-                alt="Volume"
-                class="global-volume-icon"
-              />
-              <input
-                id="global-volume-slider"
-                class="volume-slider global-slider"
-                type="range"
-                min="0"
-                max="100"
-                value="50"
-              />
-            </div>
+            <!-- Theme toggle -->
             <button
               type="button"
               class="theme-toggle"
@@ -53,6 +38,32 @@
                 class="theme-icon moon"
               />
             </button>
+
+            <!-- User dropdown with dynamic content based on login status -->
+            <div class="user-menu-container">
+              <button class="user-menu-button" id="user-menu-button">
+                <img
+                  src="{{ url_for('static', filename='icons/user.png') }}"
+                  alt="User"
+                  class="user-icon"
+                />
+              </button>
+              <div class="user-dropdown" id="user-dropdown">
+                {% if user %}
+                <!-- Logged in state - REMOVED HELLO MESSAGE -->
+                <a href="{{ url_for('user_profile') }}" class="dropdown-item"
+                  >Profile</a
+                >
+                <div class="dropdown-divider"></div>
+                <a href="{{ url_for('logout') }}" class="dropdown-item"
+                  >Logout</a
+                >
+                {% else %}
+                <!-- Not logged in state - ONLY LOGIN -->
+                <a href="{{ url_for('login') }}" class="dropdown-item">Login</a>
+                {% endif %}
+              </div>
+            </div>
           </div>
         </div>
       </header>
@@ -61,7 +72,28 @@
         <section class="playlists-section">
           <div class="playlists-header">
             <h2 class="section-title">Playlists</h2>
+
+            <!-- Global volume controls to the right of Playlists title -->
+            <div class="global-volume-controls">
+              <div class="volume-control-container">
+                <img
+                  id="global-volume-icon"
+                  src="{{ url_for('static', filename='icons/volume.png') }}"
+                  alt="Volume"
+                  class="global-volume-icon"
+                />
+                <input
+                  id="global-volume"
+                  class="volume-slider global-slider"
+                  type="range"
+                  min="0"
+                  max="100"
+                  value="50"
+                />
+              </div>
+            </div>
           </div>
+
           <div class="carousel-wrapper">
             <button id="scroll-left" class="arrow-btn">&lt;</button>
             <div class="playlist-carousel-container">
@@ -81,7 +113,7 @@
                   <a href="#" class="playlist-card" data-group="{{ group.id }}">
                     <div class="playlist-icon">
                       <img
-                        src="{{ url_for('static', filename=group.playlist_icon.split('static/')[1]) }}"
+                        src="{{ url_for('static', filename=group.playlist_icon.split('static/')[1] if 'static/' in group.playlist_icon else group.playlist_icon) }}"
                         alt="{{ group.name }} Icon"
                         class="icon-img"
                       />
@@ -110,7 +142,7 @@
             >
               <button class="sound-button">
                 <img
-                  src="{{ url_for('static', filename=sound['icon'].split('static/')[1]) }}"
+                  src="{{ url_for('static', filename=sound['icon'].split('static/')[1] if 'static/' in sound['icon'] else sound['icon']) }}"
                   alt="{{ sound['display_name'] }}"
                   class="sound-icon"
                 />
@@ -122,7 +154,7 @@
                   class="volume-slider"
                   min="0"
                   max="100"
-                  value="50"
+                  value="{{ (sound['default_volume'] * 100) | round|int if sound['default_volume'] else 50 }}"
                 />
               </div>
             </div>
@@ -130,7 +162,7 @@
             <div class="sound-button-container premium">
               <button class="sound-button">
                 <img
-                  src="/static/icons/airplane.png"
+                  src="{{ url_for('static', filename='icons/airplane.png') }}"
                   alt="Airplane"
                   class="sound-icon"
                 />
@@ -140,7 +172,7 @@
             <div class="sound-button-container premium">
               <button class="sound-button">
                 <img
-                  src="/static/icons/bird.png"
+                  src="{{ url_for('static', filename='icons/bird.png') }}"
                   alt="Bird"
                   class="sound-icon"
                 />
@@ -149,14 +181,18 @@
             </div>
             <div class="sound-button-container premium">
               <button class="sound-button">
-                <img src="/static/icons/cat.png" alt="Cat" class="sound-icon" />
+                <img
+                  src="{{ url_for('static', filename='icons/cat.png') }}"
+                  alt="Cat"
+                  class="sound-icon"
+                />
                 <p class="sound-name">Cat</p>
               </button>
             </div>
             <div class="sound-button-container premium">
               <button class="sound-button">
                 <img
-                  src="/static/icons/classroom.png"
+                  src="{{ url_for('static', filename='icons/classroom.png') }}"
                   alt="Classroom"
                   class="sound-icon"
                 />
@@ -166,7 +202,7 @@
             <div class="sound-button-container premium">
               <button class="sound-button">
                 <img
-                  src="/static/icons/library.png"
+                  src="{{ url_for('static', filename='icons/library.png') }}"
                   alt="Library"
                   class="sound-icon"
                 />
@@ -176,7 +212,7 @@
             <div class="sound-button-container premium">
               <button class="sound-button">
                 <img
-                  src="/static/icons/rain_on_umbrella.png"
+                  src="{{ url_for('static', filename='icons/rain_on_umbrella.png') }}"
                   alt="Rain on Umbrella"
                   class="sound-icon"
                 />
@@ -186,7 +222,7 @@
             <div class="sound-button-container premium">
               <button class="sound-button">
                 <img
-                  src="/static/icons/ship.png"
+                  src="{{ url_for('static', filename='icons/ship.png') }}"
                   alt="Ship"
                   class="sound-icon"
                 />
@@ -196,7 +232,7 @@
             <div class="sound-button-container premium">
               <button class="sound-button">
                 <img
-                  src="/static/icons/white_noise.png"
+                  src="{{ url_for('static', filename='icons/white_noise.png') }}"
                   alt="White Noise"
                   class="sound-icon"
                 />
@@ -208,11 +244,19 @@
       </main>
 
       <footer class="site-footer">
-        <p>
-          &copy; Calm Flow. All third-party assets were used for educational
-          purposes only.
-        </p>
+        <p>&copy; Calm Flow.</p>
       </footer>
+    </div>
+
+    <!-- Toast messages for flash messages -->
+    <div class="toast-container">
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %} {% for category, message in messages %}
+      <div class="toast toast-{{ category }}">
+        <p class="toast-message">{{ message }}</p>
+        <button class="toast-close">&times;</button>
+      </div>
+      {% endfor %} {% endif %} {% endwith %}
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>

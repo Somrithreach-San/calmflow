@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Profile - Calm Flow</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      href="{{ url_for('static', filename='icons/favicon.png') }}"
+    />
+  </head>
+  <body>
+    <div class="site-container">
+      <header class="site-header">
+        <div class="header-container">
+          <a href="/" class="logo">Calm Flow</a>
+          <div class="header-controls">
+            <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+              <img
+                src="{{ url_for('static', filename='icons/sun.png') }}"
+                alt="Sun"
+                class="theme-icon sun"
+              />
+              <img
+                src="{{ url_for('static', filename='icons/moon.png') }}"
+                alt="Moon"
+                class="theme-icon moon"
+              />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main class="main-content">
+        <div class="user-profile-container">
+          <div class="user-profile-box">
+            <h2 class="section-title">User Profile</h2>
+            <div class="user-info">
+              <p><strong>Username:</strong> {{ user.username }}</p>
+              <p><strong>Email:</strong> {{ user.email }}</p>
+              <p>
+                <strong>Member Since:</strong> {{ user.created_at.strftime('%B
+                %d, %Y') if user.created_at else 'Recently' }}
+              </p>
+            </div>
+            <div class="profile-actions">
+              <a href="/" class="action-button">Back to Home</a>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <footer class="site-footer">
+        <p>
+          &copy; Calm Flow. All third-party assets were used for educational
+          purposes only.
+        </p>
+      </footer>
+    </div>
+
+    <div class="toast-container">
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %} {% for category, message in messages %}
+      <div class="toast toast-{{ category }}">
+        <p class="toast-message">{{ message }}</p>
+        <button class="toast-close">&times;</button>
+      </div>
+      {% endfor %} {% endif %} {% endwith %}
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+  </body>
+</html>

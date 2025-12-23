@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - Calm Flow</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      href="{{ url_for('static', filename='icons/favicon.png') }}"
+    />
+  </head>
+  <body>
+    <div class="site-container">
+      <header class="site-header">
+        <div class="header-container">
+          <a href="/" class="logo">Calm Flow</a>
+          <div class="header-controls">
+            <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+              <img
+                src="{{ url_for('static', filename='icons/sun.png') }}"
+                alt="Sun"
+                class="theme-icon sun"
+              />
+              <img
+                src="{{ url_for('static', filename='icons/moon.png') }}"
+                alt="Moon"
+                class="theme-icon moon"
+              />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main class="main-content">
+        <div class="login-container">
+          <div class="login-box">
+            <div class="login-form-container">
+              <h2 class="section-title">Login</h2>
+              <form
+                class="login-form"
+                method="POST"
+                action="{{ url_for('login') }}"
+              >
+                <div class="form-group">
+                  <label for="email">Email</label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    required
+                    autocomplete="email"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="password">Password</label>
+                  <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    required
+                    autocomplete="current-password"
+                  />
+                </div>
+                <button type="submit" class="action-button">Login</button>
+              </form>
+              <p class="signup-link">
+                Don't have an account?
+                <a href="{{ url_for('signup') }}">Sign up</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <div class="toast-container">
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %} {% for category, message in messages %}
+      <div class="toast toast-{{ category }}">
+        <p class="toast-message">{{ message }}</p>
+        <button class="toast-close">&times;</button>
+      </div>
+      {% endfor %} {% endif %} {% endwith %}
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+  </body>
+</html>
