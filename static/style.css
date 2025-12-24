@@ -58,6 +58,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
 }
 
 .logo,
@@ -74,6 +75,22 @@ body {
   color: var(--text-primary);
 }
 
+/* Header center controls (global volume) */
+.header-center-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.header-volume-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 /* --- MAIN CONTENT & SECTIONS --- */
 .main-content {
   padding: 2rem 0 0 0;
@@ -83,6 +100,7 @@ body {
 .playlists-header,
 .sounds-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   padding-bottom: 1.5rem;
   flex-direction: row;
@@ -107,38 +125,51 @@ body {
   flex-grow: 1;
 }
 
-.sounds-header {
-  position: relative;
-}
-
-.action-button.clear {
-  position: absolute;
-  right: 0;
-  top: 0;
+/* --- ACTION BUTTONS --- */
+.action-button {
   font-family: "Impact", sans-serif;
   font-size: 1rem;
   font-weight: 400;
   padding: 1.25rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  cursor: pointer;
+  background-color: var(--background-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 4px 4px 0px 0px var(--shadow-color);
+  color: var(--text-primary);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* --- GLOBAL VOLUME CONTROLS (IN PLAYLOISTS HEADER) --- */
-.global-volume-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-left: auto;
+.action-button.clear {
+  position: static;
 }
 
-/* Hide old volume controls from header */
-.site-header .volume-control-container {
-  display: none;
+.action-button.create-playlist {
+  position: static;
+}
+
+.action-button:hover {
+  transform: translateY(-2px) translateX(-2px);
+  box-shadow: 6px 6px 0px 0px var(--shadow-color);
+  background-color: var(--background-secondary);
+  color: var(--text-primary);
+}
+
+.action-button:active {
+  transform: translateY(4px) translateX(4px);
+  box-shadow: 0px 0px 0px 0px var(--shadow-color);
+}
+
+/* Create playlist button active state */
+.action-button.create-playlist.active {
+  background-color: var(--background-secondary);
+  color: var(--text-primary);
 }
 
 /* --- NEUBRUTALIST ELEMENTS --- */
 .playlist-card,
-.action-button.clear,
 .arrow-btn,
 .sound-button-container.premium::after,
 .volume-slider::-webkit-slider-thumb,
@@ -149,12 +180,10 @@ body {
   border-radius: 12px;
   box-shadow: 4px 4px 0px 0px var(--shadow-color);
   color: var(--text-primary);
-  transition: transform 0.15s ease, box-shadow 0.15s ease,
-    background-color 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .playlist-card,
-.action-button.clear,
 .arrow-btn {
   cursor: pointer;
 }
@@ -173,20 +202,21 @@ body {
   text-align: center;
 }
 
-.action-button.clear,
 .arrow-btn {
   padding: 1rem 1.25rem;
+  font-size: 1.25rem;
+  line-height: 1;
+  min-width: 50px;
 }
 
 .playlist-card:hover,
-.action-button.clear:hover,
 .arrow-btn:hover {
   transform: translateY(-2px) translateX(-2px);
   box-shadow: 6px 6px 0px 0px var(--shadow-color);
+  background-color: var(--background-secondary);
 }
 
 .playlist-card:active,
-.action-button.clear:active,
 .arrow-btn:active {
   transform: translateY(4px) translateX(4px);
   box-shadow: 0px 0px 0px 0px var(--shadow-color);
@@ -197,6 +227,16 @@ body {
 .playlist-card[href*="user-profile.html"]:active {
   transform: none;
   box-shadow: 4px 4px 0px 0px var(--shadow-color);
+}
+
+/* Playlist playing state - REMOVED GREEN BORDER */
+.playlist-card.playing {
+  border-color: var(--border-color); /* Changed from var(--accent-color) */
+  background-color: var(--background-secondary);
+}
+
+.playlist-card.playing .playlist-icon img {
+  filter: grayscale(0%) brightness(1);
 }
 
 /* --- SOUND BUTTONS (ICON-ONLY) --- */
@@ -218,6 +258,10 @@ body {
 
 .sound-button.active {
   background: transparent;
+}
+
+.sound-button.playing {
+  border-color: var(--border-color); /* Changed from var(--accent-color) */
 }
 
 /* --- ICON STYLES --- */
@@ -333,15 +377,6 @@ body {
   position: relative;
 }
 
-.arrow-btn {
-  padding: 0.75rem 1rem;
-  font-size: 1.25rem;
-  line-height: 1;
-  flex-shrink: 0;
-  transition: opacity 0.3s ease;
-  min-width: 50px;
-}
-
 /* MODIFIED: Updated sound button container for proper volume slider alignment */
 .sound-button-container {
   transition: opacity 0.3s ease;
@@ -370,8 +405,14 @@ body {
 }
 
 .volume-control:not(.hidden) {
-  opacity: 1;
-  visibility: visible;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Ensure volume sliders are visible when sounds are playing from playlists */
+.sound-button.playing + .volume-control {
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 .volume-slider {
@@ -424,7 +465,7 @@ body {
   margin-top: -8px; /* Center vertically for Firefox */
 }
 
-/* REMOVED GREEN HOVER FROM VOLUME SLIDER */
+/* NO HOVER COLOR EFFECTS */
 .volume-slider::-webkit-slider-thumb:hover,
 .volume-slider::-moz-range-thumb:hover {
   transform: translateY(-1px) translateX(-1px);
@@ -469,7 +510,7 @@ body {
   filter: brightness(0) invert(0);
 }
 .global-volume-icon:hover {
-  opacity: 1;
+  opacity: 0.8;
 }
 [data-theme="dark"] .global-volume-icon {
   filter: brightness(0) invert(1);
@@ -675,7 +716,7 @@ body {
   letter-spacing: 0.5px;
 }
 
-/* REMOVED GREEN HOVER FROM DROPDOWN ITEMS */
+/* NO HOVER COLOR EFFECTS */
 .dropdown-item:hover {
   background-color: transparent;
   color: var(--text-primary);
@@ -982,6 +1023,353 @@ body {
   box-shadow: 0px 0px 0px 0px var(--shadow-color);
 }
 
+/* --- PLAYLIST CREATION FEATURES --- */
+
+/* Playlist item styles for "Add to Playlist" modal */
+.playlist-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0;
+  background-color: var(--background-primary);
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.playlist-item:hover {
+  transform: translateY(-1px) translateX(-1px);
+  box-shadow: 2px 2px 0px 0px var(--shadow-color);
+  background-color: var(--background-primary);
+}
+
+.playlist-item-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-grow: 1;
+}
+
+.playlist-item-info img {
+  width: 24px;
+  height: 24px;
+  filter: brightness(0) invert(0);
+}
+
+[data-theme="dark"] .playlist-item-info img {
+  filter: brightness(0) invert(1);
+}
+
+.sound-count {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  margin-left: auto;
+  padding-right: 1rem;
+  font-family: "Impact", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Modal styles */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal.active {
+  display: flex;
+}
+
+.modal-content {
+  background-color: var(--background-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 4px 4px 0px 0px var(--shadow-color);
+  padding: 2rem;
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.modal h2 {
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-family: "Impact", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-primary);
+}
+
+.close-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.close-button:hover {
+  color: var(--text-primary);
+  opacity: 0.7;
+}
+
+/* Playlist menu (three dots menu) */
+.playlist-menu {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 10;
+}
+
+.playlist-menu-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+}
+
+.playlist-card:hover .playlist-menu-btn {
+  opacity: 0.7;
+}
+
+.playlist-menu-btn:hover {
+  background-color: var(--background-primary);
+  transform: scale(1.1);
+  opacity: 1;
+}
+
+/* Dropdown menu for playlist options */
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 120px;
+  background-color: var(--background-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: 3px 3px 0px 0px var(--shadow-color);
+  display: none;
+  z-index: 20;
+  margin-top: 5px;
+}
+
+.dropdown-menu.show {
+  display: block;
+}
+
+.dropdown-menu .dropdown-item {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color-light);
+  cursor: pointer;
+}
+
+.dropdown-menu .dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-menu .dropdown-item:hover {
+  background-color: var(--background-primary);
+}
+
+/* Add to playlist button on sound cards - ONLY SHOWN IN PLAYLIST CREATION MODE */
+.add-to-playlist-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: var(--background-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: none; /* Hidden by default */
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.2s ease;
+  z-index: 5;
+}
+
+/* When in playlist creation mode, show ALL plus buttons automatically */
+.playlist-creation-mode .add-to-playlist-btn {
+  display: flex;
+  opacity: 1;
+}
+
+.add-to-playlist-btn:hover {
+  transform: scale(1.1);
+}
+
+.add-to-playlist-btn img {
+  width: 12px;
+  height: 12px;
+  filter: brightness(0) invert(0);
+}
+
+[data-theme="dark"] .add-to-playlist-btn img {
+  filter: brightness(0) invert(1);
+}
+
+/* Empty playlist message */
+.empty-playlist {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-primary);
+  opacity: 0.7;
+  font-style: italic;
+  font-family: "Impact", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Add sound button in playlist modal */
+.add-sound-btn {
+  background-color: var(--background-primary);
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: 2px 2px 0px 0px var(--shadow-color);
+  color: var(--text-primary);
+  padding: 0.5rem 1rem;
+  font-family: "Impact", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.add-sound-btn:hover {
+  background-color: var(--background-secondary);
+  transform: translateY(-1px) translateX(-1px);
+  box-shadow: 3px 3px 0px 0px var(--shadow-color);
+}
+
+.add-sound-btn:active {
+  transform: translateY(2px) translateX(2px);
+  box-shadow: 1px 1px 0px 0px var(--shadow-color);
+}
+
+/* Create playlist form improvements */
+#create-playlist-form .form-group {
+  margin-bottom: 1.5rem;
+}
+
+/* REMOVED: Icon selection grid for create playlist modal - now randomized */
+/* Center the Create button in modal */
+#create-playlist-form .action-button {
+  display: block;
+  margin: 2rem auto 0 auto;
+  width: 200px;
+  text-align: center;
+}
+
+/* --- MULTI-SELECT MODE STYLES --- */
+.multi-select-mode .sound-button-container {
+  position: relative;
+  cursor: pointer;
+}
+
+.selection-indicator {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  z-index: 10;
+  cursor: pointer;
+}
+
+.selection-checkbox {
+  width: 24px;
+  height: 24px;
+  background-color: var(--background-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 2px 2px 0px 0px var(--shadow-color);
+  transition: all 0.2s ease;
+}
+
+.selection-checkbox .checkmark {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: bold;
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.2s ease;
+}
+
+.sound-button-container.selected .selection-checkbox {
+  background-color: var(--background-secondary);
+  border-color: var(--border-color);
+}
+
+.sound-button-container.selected .selection-checkbox .checkmark {
+  opacity: 1;
+  transform: scale(1);
+  color: var(--text-primary);
+}
+
+/* Style for sound icons in selection mode */
+.multi-select-mode .sound-button .sound-icon {
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+/* Selection instructions toast */
+.toast-instruction {
+  background-color: var(--background-secondary);
+  border: 2px solid var(--border-color);
+}
+
+.toast-instruction .toast-message {
+  font-size: 0.9rem;
+}
+
+/* Prevent sound playback in multi-select mode */
+.multi-select-mode .sound-button {
+  pointer-events: none;
+}
+
+.multi-select-mode .sound-button-container {
+  cursor: pointer;
+}
+
 /* Responsive design for auth pages */
 @media (max-width: 768px) {
   .login-box,
@@ -1003,6 +1391,78 @@ body {
     min-width: 240px;
     max-width: 280px;
     padding: 0.625rem 1rem;
+  }
+
+  .modal-content {
+    padding: 1.5rem;
+    margin: 0 1rem;
+    max-width: 320px;
+  }
+
+  .modal h2 {
+    font-size: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .playlist-item {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .sound-count {
+    font-size: 0.8rem;
+  }
+
+  /* Adjust header for mobile */
+  .header-center-controls {
+    position: static;
+    transform: none;
+    order: 2;
+    margin: 0 auto;
+  }
+
+  .header-container {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .logo {
+    order: 1;
+  }
+
+  .header-controls {
+    order: 3;
+  }
+
+  /* Adjust playlists header for mobile */
+  .playlists-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .playlists-header .section-title {
+    text-align: center;
+    padding-left: 0;
+  }
+
+  .playlists-header .action-button.create-playlist {
+    width: 100%;
+  }
+
+  /* Adjust sounds header for mobile */
+  .sounds-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .sounds-header .section-title {
+    text-align: center;
+    padding-left: 0;
+  }
+
+  .sounds-header .action-button.clear {
+    width: 100%;
   }
 }
 
@@ -1046,6 +1506,25 @@ body {
   .toast-message {
     font-size: 0.85rem;
   }
+
+  .modal-content {
+    padding: 1.25rem;
+    max-width: 280px;
+  }
+
+  .modal h2 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .playlist-item-info {
+    gap: 0.5rem;
+  }
+
+  .playlist-item-info img {
+    width: 20px;
+    height: 20px;
+  }
 }
 
 /* Additional responsive adjustments */
@@ -1057,6 +1536,11 @@ body {
   .sound-buttons-grid {
     grid-template-columns: repeat(4, 65px);
     gap: 5rem; /* Adjusted for tablet */
+  }
+
+  /* Hide global volume on medium screens */
+  .header-center-controls {
+    display: none;
   }
 }
 

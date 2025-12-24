@@ -225,6 +225,173 @@ def reset_db_route():
         return "Database reset successfully with 5 playlists! <a href='/'>Go to homepage</a>"
     except Exception as e:
         return f"Error: {str(e)}"
+    
+# app.py - Add these routes after existing routes
+
+@app.route('/api/playlists', methods=['GET'])
+def get_user_playlists():
+    """Get all playlists for the current user"""
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    user = User.query.get(session['user_id'])
+    playlists = Playlist.query.filter_by(user_id=user.id).all()
+    
+    playlist_list = []
+    for playlist in playlists:
+        playlist_list.append({
+            'id': playlist.id,
+            'name': playlist.name,
+            'icon': playlist.playlist_icon,
+            'sound_count': len(playlist.sounds)
+        })
+    
+    return jsonify(playlists=playlist_list)
+
+@app.route('/api/playlists/create', methods=['POST'])
+def create_playlist():
+    """Create a new playlist for the current user"""
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    data = request.get_json()
+    if not data or 'name' not in data:
+        return jsonify({'error': 'Playlist name required'}), 400
+    
+    user = User.query.get(session['user_id'])
+    
+    # Check if playlist with same name already exists for this user
+    existing = Playlist.query.filter_by(
+        user_id=user.id, 
+        name=data['name']
+    ).first()
+    
+    if existing:
+        return jsonify({'error': 'You already have a playlist with this name'}), 400
+    
+    # Create new playlist
+    new_playlist = Playlist(
+        name=data['name'],
+        user_id=user.id,
+        playlist_icon=data.get('icon', 'static/icons/add.png')
+    )
+    
+    db.session.add(new_playlist)
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'playlist': {
+            'id': new_playlist.id,
+            'name': new_playlist.name,
+            'icon': new_playlist.playlist_icon
+        }
+    })
+
+@app.route('/api/playlists/<int:playlist_id>', methods=['GET'])
+def get_playlist(playlist_id):
+    """Get specific playlist with its sounds"""
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    playlist = Playlist.query.get_or_404(playlist_id)
+    
+    # Check if playlist belongs to current user
+    if playlist.user_id != session['user_id']:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    sounds_list = []
+    for sound in playlist.sounds:
+        sound_dict = sound.to_dict()
+        sound_dict['user_can_access'] = True  # User is logged in
+        sounds_list.append(sound_dict)
+    
+    return jsonify({
+        'id': playlist.id,
+        'name': playlist.name,
+        'icon': playlist.playlist_icon,
+        'sounds': sounds_list
+    })
+
+@app.route('/api/playlists/<int:playlist_id>/add-sound', methods=['POST'])
+def add_sound_to_playlist(playlist_id):
+    """Add a sound to a playlist"""
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    data = request.get_json()
+    if not data or 'sound_id' not in data:
+        return jsonify({'error': 'Sound ID required'}), 400
+    
+    playlist = Playlist.query.get_or_404(playlist_id)
+    
+    # Check if playlist belongs to current user
+    if playlist.user_id != session['user_id']:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    sound = Sound.query.get_or_404(data['sound_id'])
+    
+    # Check if sound is already in playlist
+    if sound in playlist.sounds:
+        return jsonify({'error': 'Sound already in playlist'}), 400
+    
+    # Add sound to playlist
+    playlist.sounds.append(sound)
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'message': f'Added {sound.display_name} to {playlist.name}'
+    })
+
+@app.route('/api/playlists/<int:playlist_id>/remove-sound', methods=['POST'])
+def remove_sound_from_playlist(playlist_id):
+    """Remove a sound from a playlist"""
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    data = request.get_json()
+    if not data or 'sound_id' not in data:
+        return jsonify({'error': 'Sound ID required'}), 400
+    
+    playlist = Playlist.query.get_or_404(playlist_id)
+    
+    # Check if playlist belongs to current user
+    if playlist.user_id != session['user_id']:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    sound = Sound.query.get_or_404(data['sound_id'])
+    
+    # Remove sound from playlist
+    if sound in playlist.sounds:
+        playlist.sounds.remove(sound)
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'message': f'Removed {sound.display_name} from {playlist.name}'
+        })
+    
+    return jsonify({'error': 'Sound not in playlist'}), 404
+
+@app.route('/api/playlists/<int:playlist_id>/delete', methods=['DELETE'])
+def delete_playlist(playlist_id):
+    """Delete a playlist"""
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    playlist = Playlist.query.get_or_404(playlist_id)
+    
+    # Check if playlist belongs to current user
+    if playlist.user_id != session['user_id']:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    db.session.delete(playlist)
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'message': f'Playlist "{playlist.name}" deleted'
+    })
 
 @app.route('/cleanup-unwanted-groups')
 def cleanup_unwanted_groups():

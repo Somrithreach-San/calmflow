@@ -19,6 +19,27 @@
       <header class="site-header">
         <div class="header-container">
           <a href="/" class="logo">Calm Flow</a>
+
+          <!-- Global volume controls in header center -->
+          <div class="header-center-controls">
+            <div class="header-volume-controls">
+              <img
+                id="global-volume-icon"
+                src="{{ url_for('static', filename='icons/volume.png') }}"
+                alt="Volume"
+                class="global-volume-icon"
+              />
+              <input
+                id="global-volume"
+                class="volume-slider global-slider"
+                type="range"
+                min="0"
+                max="100"
+                value="50"
+              />
+            </div>
+          </div>
+
           <div class="header-controls">
             <button
               type="button"
@@ -72,32 +93,23 @@
           <div class="playlists-header">
             <h2 class="section-title">Playlists</h2>
 
-            <!-- Global volume controls -->
-            <div class="global-volume-controls">
-              <div class="volume-control-container">
-                <img
-                  id="global-volume-icon"
-                  src="{{ url_for('static', filename='icons/volume.png') }}"
-                  alt="Volume"
-                  class="global-volume-icon"
-                />
-                <input
-                  id="global-volume"
-                  class="volume-slider global-slider"
-                  type="range"
-                  min="0"
-                  max="100"
-                  value="50"
-                />
-              </div>
-            </div>
+            <!-- Create Playlist button on right side -->
+            {% if user %}
+            <button
+              class="action-button create-playlist"
+              id="create-playlist-btn"
+            >
+              Create Playlist
+            </button>
+            {% endif %}
           </div>
 
           <div class="carousel-wrapper">
             <button id="scroll-left" class="arrow-btn">&lt;</button>
             <div class="playlist-carousel-container">
               <div class="playlist-carousel">
-                <div class="playlist-grid">
+                <div class="playlist-grid" id="playlist-grid">
+                  <!-- Random playlist -->
                   <a href="#" class="playlist-card" id="random-playlist">
                     <div class="playlist-icon">
                       <img
@@ -108,6 +120,8 @@
                     </div>
                     <h3 class="playlist-title">Random</h3>
                   </a>
+
+                  <!-- Default group playlists -->
                   {% for group in groups %}
                   <a href="#" class="playlist-card" data-group="{{ group.id }}">
                     <div class="playlist-icon">
@@ -120,6 +134,7 @@
                     <h3 class="playlist-title">{{ group.name }}</h3>
                   </a>
                   {% endfor %}
+                  <!-- User playlists will be loaded here dynamically -->
                 </div>
               </div>
             </div>
@@ -138,6 +153,7 @@
             <div
               class="sound-button-container"
               data-sound-name="{{ sound['name'] }}"
+              data-sound-id="{{ sound['id'] }}"
               data-group="{{ sound['groups'] | join(' ') }}"
             >
               <button class="sound-button">
@@ -157,6 +173,15 @@
                   value="{{ (sound['default_volume'] * 100) | round|int if sound['default_volume'] else 50 }}"
                 />
               </div>
+              {% if user %}
+              <!-- Add to playlist button (hidden by default, shown only in playlist creation mode) -->
+              <button class="add-to-playlist-btn" title="Add to playlist">
+                <img
+                  src="{{ url_for('static', filename='icons/add.png') }}"
+                  alt="Add"
+                />
+              </button>
+              {% endif %}
             </div>
             {% else %}
             <!-- Premium sound (locked for non-logged-in users) -->
@@ -187,6 +212,44 @@
       <footer class="site-footer">
         <p>&copy; Calm Flow.</p>
       </footer>
+    </div>
+
+    <!-- Create Playlist Modal - REMOVED ICON SELECTION -->
+    <div id="create-playlist-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Create a new playlist</h2>
+        <form id="create-playlist-form">
+          <div class="form-group">
+            <label for="playlist-name">Playlist Name</label>
+            <input
+              type="text"
+              id="playlist-name"
+              name="playlist_name"
+              required
+              placeholder="Playlist Name"
+            />
+          </div>
+          <input
+            type="hidden"
+            id="playlist-icon"
+            name="playlist_icon"
+            value=""
+          />
+          <button type="submit" class="action-button">Create</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Add to Playlist Modal -->
+    <div id="add-to-playlist-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Add to Playlist</h2>
+        <div id="user-playlists-list" class="empty-playlist">
+          Loading playlists...
+        </div>
+      </div>
     </div>
 
     <!-- Toast messages for flash messages -->
