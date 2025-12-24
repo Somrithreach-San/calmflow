@@ -160,10 +160,7 @@
             </div>
             {% else %}
             <!-- Premium sound (locked for non-logged-in users) -->
-            <div
-              class="sound-button-container premium"
-              title="🔒 Free Account - Register to unlock all sounds!"
-            >
+            <div class="sound-button-container premium">
               <button class="sound-button">
                 <img
                   src="{{ url_for('static', filename=sound['icon'].split('static/')[1] if 'static/' in sound['icon'] else sound['icon']) }}"

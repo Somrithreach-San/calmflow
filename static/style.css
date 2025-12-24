@@ -316,10 +316,11 @@ body {
   display: none;
 }
 
+/* MODIFIED: Increased horizontal gap between sound icons */
 .sound-buttons-grid {
   display: grid;
   grid-template-columns: repeat(4, 65px);
-  gap: 6rem;
+  gap: 7rem; /* Increased from 6rem to 7rem */
   justify-content: center;
   align-items: center;
 }
@@ -341,22 +342,31 @@ body {
   min-width: 50px;
 }
 
+/* MODIFIED: Updated sound button container for proper volume slider alignment */
 .sound-button-container {
   transition: opacity 0.3s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
+  position: relative;
+  width: 100%;
 }
 
-/* --- VOLUME CONTROLS --- */
+/* MODIFIED: Updated volume controls for center alignment */
 .volume-control {
-  width: 90%;
+  width: 140px; /* Fixed width for better control */
   margin: 0.5rem auto 0;
   height: 20px;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s ease, visibility 0.3s ease;
+  position: absolute;
+  top: 75px; /* Position below the sound icon */
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
 }
 
 .volume-control:not(.hidden) {
@@ -374,6 +384,7 @@ body {
   outline: none;
   position: relative;
   cursor: pointer;
+  min-width: 140px; /* Ensure minimum width */
 }
 
 .volume-slider::before {
@@ -402,6 +413,15 @@ body {
   transition: transform 0.15s ease, box-shadow 0.15s ease,
     background-color 0.15s ease, border 0.15s ease;
   cursor: grab;
+}
+
+/* Center the thumb by default */
+.volume-slider::-webkit-slider-thumb {
+  margin-top: -8px; /* Center vertically */
+}
+
+.volume-slider::-moz-range-thumb {
+  margin-top: -8px; /* Center vertically for Firefox */
 }
 
 /* REMOVED GREEN HOVER FROM VOLUME SLIDER */
@@ -1036,7 +1056,7 @@ body {
 
   .sound-buttons-grid {
     grid-template-columns: repeat(4, 65px);
-    gap: 4rem;
+    gap: 5rem; /* Adjusted for tablet */
   }
 }
 
@@ -1051,7 +1071,7 @@ body {
 
   .sound-buttons-grid {
     grid-template-columns: repeat(3, 65px);
-    gap: 3rem;
+    gap: 4rem; /* Adjusted for mobile */
   }
 
   .carousel-wrapper {
@@ -1071,7 +1091,7 @@ body {
 @media (max-width: 480px) {
   .sound-buttons-grid {
     grid-template-columns: repeat(2, 65px);
-    gap: 2rem;
+    gap: 3rem; /* Adjusted for small mobile */
   }
 
   .playlist-card {
