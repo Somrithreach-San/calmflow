@@ -1,8 +1,23 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- ✅ CRITICAL: Set theme from localStorage BEFORE CSS loads to prevent flash -->
+    <script>
+      (function () {
+        try {
+          const savedTheme = localStorage.getItem("theme");
+          if (savedTheme) {
+            document.documentElement.setAttribute("data-theme", savedTheme);
+          }
+        } catch (e) {
+          console.log("Theme initialization error:", e);
+        }
+      })();
+    </script>
+
     <title>Calm Flow</title>
     <link
       rel="stylesheet"
@@ -93,7 +108,9 @@
           <div class="playlists-header">
             <h2 class="section-title">Playlists</h2>
 
-            <!-- Create Playlist button on right side -->
+            <!-- ✅ MODIFIED: Create Playlist button for ALL users -->
+            <!-- For logged-in users: normal button -->
+            <!-- For non-logged-in users: grayed out with tooltip -->
             {% if user %}
             <button
               class="action-button create-playlist"
@@ -101,6 +118,17 @@
             >
               Create Playlist
             </button>
+            {% else %}
+            <!-- FIXED: Wrapper with premium class for tooltip -->
+            <div class="create-playlist-wrapper premium">
+              <button
+                class="action-button create-playlist disabled"
+                id="create-playlist-btn"
+                disabled
+              >
+                Create Playlist
+              </button>
+            </div>
             {% endif %}
           </div>
 
@@ -181,6 +209,17 @@
                   alt="Add"
                 />
               </button>
+              {% else %}
+              <!-- Show locked add-to-playlist button for non-logged-in users -->
+              <button
+                class="add-to-playlist-btn disabled"
+                title="Login Required"
+              >
+                <img
+                  src="{{ url_for('static', filename='icons/add-locked.png') }}"
+                  alt="Add"
+                />
+              </button>
               {% endif %}
             </div>
             {% else %}
@@ -203,6 +242,16 @@
                   value="50"
                 />
               </div>
+              <!-- Always show locked add button for premium sounds -->
+              <button
+                class="add-to-playlist-btn disabled"
+                title="Login Required"
+              >
+                <img
+                  src="{{ url_for('static', filename='icons/add-locked.png') }}"
+                  alt="Add"
+                />
+              </button>
             </div>
             {% endif %} {% endfor %}
           </div>
@@ -261,6 +310,29 @@
         <button class="toast-close">&times;</button>
       </div>
       {% endfor %} {% endif %} {% endwith %}
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <!-- Delete Confirmation Modal - Single Button (Normal Style) -->
+    <div id="delete-confirmation-modal" class="modal">
+      <div class="modal-content">
+        <!-- X button for closing -->
+        <button class="close-button">&times;</button>
+
+        <div class="modal-body">
+          <p class="warning-text">
+            Are you sure you want to delete<span
+              id="playlist-to-delete-name"
+            ></span
+            >?
+          </p>
+        </div>
+
+        <div class="modal-footer">
+          <!-- Single Delete button with normal styling -->
+          <button class="btn" id="confirm-delete-btn">Delete</button>
+        </div>
+      </div>
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>

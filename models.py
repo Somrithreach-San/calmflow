@@ -72,3 +72,6 @@ class Playlist(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     playlist_icon = db.Column(db.String(255))
     sounds = db.relationship("Sound", secondary=playlist_sound_association, back_populates="playlists")
+    
+    # Add this relationship
+    user = db.relationship("User", backref="playlists")
