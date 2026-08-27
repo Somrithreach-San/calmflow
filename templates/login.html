@@ -65,6 +65,7 @@
                     type="email"
                     id="email"
                     name="email"
+                    value="test@example.com"
                     required
                     autocomplete="email"
                   />
@@ -75,6 +76,7 @@
                     type="password"
                     id="password"
                     name="password"
+                    value="password123"
                     required
                     autocomplete="current-password"
                   />
@@ -92,6 +94,13 @@
     </div>
 
     <div class="toast-container">
+      <div class="toast toast-info toast-persistent">
+        <div>
+          <p class="toast-message" style="font-weight: 400; margin-bottom: 2px;">💡 Demo Account Pre-filled</p>
+          <p class="toast-message" style="font-size: 0.8rem; opacity: 0.8; font-family: monospace; text-transform: none;">test@example.com / password123</p>
+        </div>
+        <button class="toast-close">&times;</button>
+      </div>
       {% with messages = get_flashed_messages(with_categories=true) %} {% if
       messages %} {% for category, message in messages %}
       <div class="toast toast-{{ category }}">

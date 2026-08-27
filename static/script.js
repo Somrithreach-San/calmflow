@@ -2088,15 +2088,20 @@ function setupToasts() {
     const closeBtn = toast.querySelector(".toast-close");
     if (closeBtn) {
       closeBtn.addEventListener("click", () => {
-        toast.remove();
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(-10px)";
+        setTimeout(() => toast.remove(), 300);
       });
     }
 
-    setTimeout(() => {
-      toast.style.opacity = "0";
-      toast.style.transform = "translateY(-10px)";
-      setTimeout(() => toast.remove(), 300);
-    }, 5000);
+    // Only auto-dismiss non-persistent toasts
+    if (!toast.classList.contains("toast-persistent")) {
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(-10px)";
+        setTimeout(() => toast.remove(), 300);
+      }, 5000);
+    }
   });
 }
 
