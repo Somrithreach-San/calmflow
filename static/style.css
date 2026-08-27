@@ -39,6 +39,8 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .site-container {
@@ -102,7 +104,8 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 1.5rem;
+  padding-bottom: 2rem;
+  margin-bottom: 1rem;
   flex-direction: row;
   position: relative;
   min-height: 60px;
@@ -560,31 +563,38 @@ body {
 }
 
 .sound-button-container.premium:hover .sound-icon {
-  opacity: 1;
-  transform: scale(1.1);
+  opacity: 0.8;
 }
 
-.sound-button-container.premium::after {
-  content: "Login Required.";
+.sound-button-container.premium::after,
+.sound-button-container.show-message::after {
+  content: "Login Required";
   position: absolute;
-  bottom: 110%;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
-  padding: 1rem 1.5rem;
+  transform: translate(-50%, -50%);
+  padding: 0.45rem 0.75rem;
   font-family: "Impact", sans-serif;
-  font-size: 1.1rem;
+  font-size: 0.85rem;
   font-weight: 400;
   white-space: nowrap;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.2s ease, visibility 0.2s ease;
   pointer-events: none;
-  z-index: 10;
+  z-index: 25;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  background-color: var(--background-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 3px 3px 0px 0px var(--shadow-color);
+  color: var(--text-primary);
 }
 
-.sound-button-container.premium:hover::after {
+.sound-button-container.premium:hover::after,
+.sound-button-container.premium.show-message::after,
+.sound-button-container.show-message::after {
   opacity: 1;
   visibility: visible;
 }
@@ -1395,14 +1405,13 @@ body {
 
 /* Tooltip for disabled Create Playlist button */
 .create-playlist-wrapper.premium::after {
-  content: "Login Required.";
+  content: "Login Required";
   position: absolute;
-  bottom: 110%;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 1rem 1.5rem;
+  bottom: 115%;
+  right: 0;
+  padding: 0.5rem 0.85rem;
   font-family: "Impact", sans-serif;
-  font-size: 1.1rem;
+  font-size: 0.85rem;
   font-weight: 400;
   white-space: nowrap;
   opacity: 0;
@@ -1414,12 +1423,13 @@ body {
   letter-spacing: 0.5px;
   background-color: var(--background-secondary);
   border: 2px solid var(--border-color);
-  border-radius: 12px;
-  box-shadow: 4px 4px 0px 0px var(--shadow-color);
+  border-radius: 8px;
+  box-shadow: 3px 3px 0px 0px var(--shadow-color);
   color: var(--text-primary);
 }
 
-.create-playlist-wrapper.premium:hover::after {
+.create-playlist-wrapper.premium:hover::after,
+.create-playlist-wrapper.premium.show-message::after {
   opacity: 1;
   visibility: visible;
 }
@@ -1436,225 +1446,7 @@ body {
   outline: none;
 }
 
-/* Responsive design */
-@media (max-width: 768px) {
-  .login-box,
-  .signup-box,
-  .user-profile-box {
-    padding: 1.5rem;
-    margin: 0 1rem;
-    max-width: 320px;
-  }
-
-  .login-form-container h2,
-  .signup-form-container h2,
-  .user-profile-box h2 {
-    font-size: 1.75rem;
-    margin-bottom: 1.25rem;
-  }
-
-  .toast {
-    min-width: 240px;
-    max-width: 280px;
-    padding: 0.625rem 1rem;
-  }
-
-  .modal-content {
-    padding: 1.5rem;
-    margin: 0 1rem;
-    max-width: 320px;
-  }
-
-  .modal h2 {
-    font-size: 1.25rem;
-    margin-bottom: 1.25rem;
-  }
-
-  .playlist-item {
-    padding: 0.5rem 0.75rem;
-  }
-
-  .sound-count {
-    font-size: 0.8rem;
-  }
-
-  /* Adjust header for mobile */
-  .header-center-controls {
-    position: static;
-    transform: none;
-    order: 2;
-    margin: 0 auto;
-  }
-
-  .header-container {
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-
-  .logo {
-    order: 1;
-  }
-
-  .header-controls {
-    order: 3;
-  }
-
-  /* Adjust playlists header for mobile */
-  .playlists-header {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
-  }
-
-  .playlists-header .section-title {
-    text-align: center;
-    padding-left: 0;
-  }
-
-  .playlists-header .action-button.create-playlist {
-    width: 100%;
-  }
-
-  /* Adjust sounds header for mobile */
-  .sounds-header {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
-  }
-
-  .sounds-header .section-title {
-    text-align: center;
-    padding-left: 0;
-  }
-
-  .sounds-header .action-button.clear {
-    width: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  .login-box,
-  .signup-box,
-  .user-profile-box {
-    padding: 1.25rem;
-    max-width: 280px;
-  }
-
-  .login-form-container h2,
-  .signup-form-container h2,
-  .user-profile-box h2 {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-  }
-
-  .login-form,
-  .signup-form {
-    gap: 1rem;
-  }
-
-  .form-group input {
-    padding: 0.625rem 0.875rem;
-    font-size: 0.9rem;
-  }
-
-  .login-form .action-button,
-  .signup-form .action-button {
-    padding: 0.75rem 1.25rem;
-    font-size: 1rem;
-  }
-
-  .toast {
-    min-width: 200px;
-    max-width: 240px;
-    padding: 0.5rem 0.875rem;
-  }
-
-  .toast-message {
-    font-size: 0.85rem;
-  }
-
-  .modal-content {
-    padding: 1.25rem;
-    max-width: 280px;
-  }
-
-  .modal h2 {
-    font-size: 1.1rem;
-    margin-bottom: 1rem;
-  }
-
-  .playlist-item-info {
-    gap: 0.5rem;
-  }
-
-  .playlist-item-info img {
-    width: 20px;
-    height: 20px;
-  }
-}
-
-@media (max-width: 1024px) {
-  .playlist-carousel-container {
-    width: 100%;
-  }
-
-  .sound-buttons-grid {
-    grid-template-columns: repeat(4, 65px);
-    gap: 5rem;
-  }
-
-  /* Hide global volume on medium screens */
-  .header-center-controls {
-    display: none;
-  }
-}
-
-@media (max-width: 768px) {
-  .site-container {
-    padding: 0 1rem;
-  }
-
-  .playlist-carousel-container {
-    width: 100%;
-  }
-
-  .sound-buttons-grid {
-    grid-template-columns: repeat(3, 65px);
-    gap: 4rem;
-  }
-
-  .carousel-wrapper {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .arrow-btn {
-    order: 2;
-  }
-
-  .playlist-carousel-container {
-    order: 1;
-  }
-}
-
-@media (max-width: 480px) {
-  .sound-buttons-grid {
-    grid-template-columns: repeat(2, 65px);
-    gap: 3rem;
-  }
-
-  .playlist-card {
-    width: 160px;
-    height: 160px;
-    padding: 1rem;
-  }
-
-  .playlist-title {
-    font-size: 1rem;
-  }
-}
-
-/* Neo-brutalism Delete Modal */
+/* --- NEO-BRUTALISM DELETE MODAL --- */
 #delete-confirmation-modal {
   display: none;
   position: fixed;
@@ -1743,7 +1535,6 @@ body {
   letter-spacing: 0.5px;
 }
 
-/* Modal footer with Cancel and Delete buttons */
 #delete-confirmation-modal .modal-footer {
   display: flex;
   justify-content: center;
@@ -1782,17 +1573,412 @@ body {
   color: var(--error-color);
 }
 
-/* Responsive */
-@media (max-width: 480px) {
-  #delete-confirmation-modal .modal-content {
-    width: 95%;
-    max-width: 95%;
-    margin: 1rem;
+/* ===================================================
+   RESPONSIVE DESIGN
+=================================================== */
+
+/* --- TABLETS / MEDIUM SCREENS (<= 1024px) --- */
+@media (max-width: 1024px) {
+  .site-container {
+    padding: 0 1.5rem;
+  }
+
+  .header-center-controls {
+    display: none;
+  }
+
+  .sound-buttons-grid {
+    grid-template-columns: repeat(3, minmax(120px, 1fr));
+    gap: 4.5rem 1.5rem;
+    justify-items: center;
+  }
+}
+
+/* --- MOBILE LANDSCAPE & TABLETS (<= 768px) --- */
+@media (max-width: 768px) {
+  .site-container {
+    padding: 0 1rem;
+  }
+
+  .site-header {
+    padding: 1rem 0;
+    margin-bottom: 1.5rem;
+  }
+
+  .header-container {
+    gap: 0.75rem;
+  }
+
+  .logo {
+    font-size: 1.4rem;
+  }
+
+  .playlists-header,
+  .sounds-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: auto;
+    padding-bottom: 1rem;
+  }
+
+  .playlists-header .section-title,
+  .sounds-header .section-title {
+    font-size: 1.4rem;
+    padding-left: 0;
+    margin: 0;
+  }
+
+  .action-button.create-playlist,
+  .action-button.clear {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+    border-radius: 10px;
+  }
+
+  /* Carousel */
+  .carousel-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  .playlist-carousel-container {
+    width: calc(100% - 90px);
+    max-width: 540px;
+    overflow: hidden;
+  }
+
+  .playlist-carousel {
+    gap: 1rem;
+    padding: 0.5rem 0.25rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .playlist-card {
+    width: 155px;
+    height: 155px;
+    padding: 1rem 0.5rem;
+    border-radius: 14px;
+    box-shadow: 3px 3px 0px 0px var(--shadow-color);
+  }
+
+  .playlist-card .icon-img {
+    width: 42px;
+    height: 42px;
+    margin: 0 auto 0.75rem;
+  }
+
+  .playlist-title {
+    font-size: 0.95rem;
+  }
+
+  .arrow-btn {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    font-size: 1.1rem;
+    border-radius: 10px;
+    box-shadow: 3px 3px 0px 0px var(--shadow-color);
+  }
+
+  /* Sounds Grid */
+  .sound-buttons-grid {
+    grid-template-columns: repeat(3, minmax(100px, 1fr));
+    gap: 4.5rem 1.25rem;
+    justify-items: center;
+  }
+
+  .sound-button-container {
+    width: 65px;
+    height: 65px;
+  }
+
+  .volume-control {
+    width: 120px;
+    top: 72px;
+  }
+
+  /* Forms & Modals */
+  .login-container,
+  .signup-container,
+  .user-profile-container {
+    min-height: calc(100vh - 160px);
+    padding: 1rem 0;
+  }
+
+  .login-box,
+  .signup-box,
+  .user-profile-box {
     padding: 1.5rem;
+    margin: 0 auto;
+    max-width: 340px;
+  }
+
+  .login-form-container h2,
+  .signup-form-container h2,
+  .user-profile-box h2 {
+    font-size: 1.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .toast-container {
+    top: 15px;
+    right: 15px;
+    left: 15px;
+    align-items: flex-end;
+  }
+
+  .toast {
+    min-width: auto;
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .modal-content {
+    padding: 1.5rem;
+    margin: 0 1rem;
+    max-width: 360px;
+  }
+
+  .modal h2 {
+    font-size: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .playlist-item {
+    padding: 0.5rem 0.75rem;
+  }
+}
+
+/* --- SMALL MOBILE / PHONES (<= 480px) --- */
+@media (max-width: 480px) {
+  .site-container {
+    padding: 0 1.5rem; /* Increased left/right padding for mobile */
+  }
+
+  .logo {
+    font-size: 1.25rem;
+  }
+
+  .playlists-header,
+  .sounds-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: auto;
+    padding-bottom: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .playlists-header .section-title,
+  .sounds-header .section-title {
+    font-size: 1.25rem;
+  }
+
+  .action-button.create-playlist,
+  .action-button.clear {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    border-radius: 8px;
+  }
+
+  .carousel-wrapper {
+    gap: 0.5rem;
+  }
+
+  .playlist-carousel-container {
+    width: calc(100% - 76px);
+  }
+
+  .playlist-card {
+    width: 130px;
+    height: 130px;
+    padding: 0.75rem 0.25rem;
+    border-radius: 12px;
+  }
+
+  .playlist-card .icon-img {
+    width: 34px;
+    height: 34px;
+    margin: 0 auto 0.5rem;
+  }
+
+  .playlist-title {
+    font-size: 0.85rem;
+  }
+
+  .arrow-btn {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    font-size: 0.9rem;
+    border-radius: 8px;
+  }
+
+  /* Compact Sound Buttons for Mobile */
+  .sound-button .sound-icon {
+    max-width: 40px;
+    height: 40px;
+  }
+
+  .sound-button-container {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* Extra Short Volume Slider for Mobile */
+  .volume-control {
+    width: 48px;
+    top: 48px;
+    height: 14px;
+  }
+
+  .volume-slider {
+    height: 5px;
+    border-width: 1px;
+  }
+
+  .volume-slider::-webkit-slider-thumb {
+    width: 11px;
+    height: 11px;
+    border-width: 1.5px;
+  }
+
+  .volume-slider::-moz-range-thumb {
+    width: 11px;
+    height: 11px;
+    border-width: 1.5px;
+  }
+
+  .add-to-playlist-btn {
+    width: 18px;
+    height: 18px;
+    top: -4px;
+    right: -8px;
+  }
+
+  .add-to-playlist-btn img {
+    width: 9px;
+    height: 9px;
+  }
+
+  .sound-button-container.premium::after,
+  .sound-button-container.show-message::after {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.6rem;
+    top: 50%;
+    bottom: auto;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 6px;
+    box-shadow: 2px 2px 0px 0px var(--shadow-color);
+  }
+
+  .create-playlist-wrapper.premium::after,
+  .create-playlist-wrapper.show-message::after {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.6rem;
+    bottom: 115%;
+    right: 0;
+    left: auto;
+    transform: none;
+    border-radius: 6px;
+    box-shadow: 2px 2px 0px 0px var(--shadow-color);
+  }
+
+  /* 3-Column Sound Grid on Mobile Phones */
+  .sound-buttons-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3.25rem 0.5rem;
+    justify-items: center;
+  }
+
+  .login-box,
+  .signup-box,
+  .user-profile-box {
+    padding: 1.25rem;
+    max-width: 300px;
+  }
+
+  .login-form,
+  .signup-form {
+    gap: 1rem;
+  }
+
+  .form-group input {
+    padding: 0.625rem 0.875rem;
+    font-size: 0.9rem;
+  }
+
+  .login-form .action-button,
+  .signup-form .action-button {
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+  }
+
+  .modal-content {
+    padding: 1.25rem;
+    max-width: 92%;
+    margin: 0.5rem;
+  }
+
+  #delete-confirmation-modal .modal-content {
+    width: 92%;
+    padding: 1.5rem 1rem;
+  }
+
+  #delete-confirmation-modal .modal-footer {
+    flex-direction: column;
+    gap: 0.75rem;
   }
 
   #delete-confirmation-modal .modal-footer .btn {
     width: 100%;
-    padding: 0.75rem 1.5rem;
+    min-width: auto;
+  }
+}
+
+/* --- EXTRA SMALL SCREENS (<= 360px) --- */
+@media (max-width: 360px) {
+  .site-container {
+    padding: 0 0.85rem;
+  }
+
+  .playlist-carousel-container {
+    width: calc(100% - 68px);
+  }
+
+  .playlist-card {
+    width: 115px;
+    height: 115px;
+  }
+
+  .sound-button .sound-icon {
+    max-width: 36px;
+    height: 36px;
+  }
+
+  .sound-button-container {
+    width: 36px;
+    height: 36px;
+  }
+
+  .volume-control {
+    width: 56px;
+    top: 45px;
+  }
+
+  .sound-buttons-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3rem 0.25rem;
   }
 }

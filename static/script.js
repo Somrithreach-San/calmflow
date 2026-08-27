@@ -102,7 +102,14 @@ class SoundManager {
       // Show login message when clicked
       createPlaylistBtn.addEventListener("click", (e) => {
         e.preventDefault();
-        this.showToast("Please login to create playlists", "info");
+        const wrapper = createPlaylistBtn.closest(".create-playlist-wrapper");
+        if (wrapper) {
+          wrapper.classList.add("show-message");
+          clearTimeout(wrapper._msgTimeout);
+          wrapper._msgTimeout = setTimeout(() => {
+            wrapper.classList.remove("show-message");
+          }, 2000);
+        }
       });
       return;
     }
@@ -810,7 +817,6 @@ class SoundManager {
   }
 
   disableTrackpadNavigation() {
-    let lastX = 0;
     let isScrolling = false;
 
     window.addEventListener(
@@ -820,41 +826,10 @@ class SoundManager {
           Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 10;
 
         if (isHorizontalSwipe && !isScrolling) {
-          e.preventDefault();
-          e.stopPropagation();
-          return false;
-        }
-
-        lastX = e.deltaX;
-      },
-      { passive: false }
-    );
-
-    let touchStartX = 0;
-    let touchStartY = 0;
-
-    document.addEventListener(
-      "touchstart",
-      (e) => {
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-      },
-      { passive: true }
-    );
-
-    document.addEventListener(
-      "touchmove",
-      (e) => {
-        if (!touchStartX || !touchStartY) return;
-
-        const touchX = e.touches[0].clientX;
-        const touchY = e.touches[0].clientY;
-
-        const diffX = Math.abs(touchX - touchStartX);
-        const diffY = Math.abs(touchY - touchStartY);
-
-        if (diffX > diffY && diffX > 30) {
-          e.preventDefault();
+          // Prevent browser history navigation on horizontal wheel/trackpad swipe
+          if (!e.target.closest(".playlist-carousel")) {
+            e.preventDefault();
+          }
         }
       },
       { passive: false }
@@ -863,6 +838,7 @@ class SoundManager {
     document.addEventListener(
       "scroll",
       () => {
+        isScrolling = true;
         isScrolling = true;
         clearTimeout(window.scrollTimeout);
         window.scrollTimeout = setTimeout(() => {
@@ -1802,6 +1778,33 @@ class SoundManager {
     });
 
     document.addEventListener("click", (e) => {
+      const disabledAddBtn = e.target.closest(".add-to-playlist-btn.disabled");
+      if (disabledAddBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const container = disabledAddBtn.closest(".sound-button-container");
+        if (container) {
+          container.classList.add("show-message");
+          clearTimeout(container._msgTimeout);
+          container._msgTimeout = setTimeout(() => {
+            container.classList.remove("show-message");
+          }, 2000);
+        }
+        return;
+      }
+
+      const premiumContainer = e.target.closest(".sound-button-container.premium");
+      if (premiumContainer && !this.isUserLoggedIn && e.target.closest(".sound-button")) {
+        e.preventDefault();
+        e.stopPropagation();
+        premiumContainer.classList.add("show-message");
+        clearTimeout(premiumContainer._msgTimeout);
+        premiumContainer._msgTimeout = setTimeout(() => {
+          premiumContainer.classList.remove("show-message");
+        }, 2000);
+        return;
+      }
+
       if (e.target.closest(".add-to-playlist-btn")) {
         e.preventDefault();
         e.stopPropagation();
