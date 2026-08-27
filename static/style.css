@@ -350,6 +350,8 @@ body {
   display: flex;
   gap: 24px;
   padding: 10px 0;
+  width: max-content;
+  flex-shrink: 0;
 }
 
 .playlist-carousel-container {
@@ -1708,8 +1710,12 @@ body {
   }
 
   .sound-button-container {
-    width: 65px;
-    height: 65px;
+    width: 120px;
+    height: 96px;
+  }
+
+  .add-to-playlist-btn {
+    right: 20px;
   }
 
   .volume-control {
@@ -1844,8 +1850,8 @@ body {
   }
 
   .sound-button-container {
-    width: 40px;
-    height: 40px;
+    width: 70px;
+    height: 64px;
   }
 
   /* Balanced Short Volume Slider for Mobile */
@@ -1878,7 +1884,7 @@ body {
     width: 18px;
     height: 18px;
     top: -4px;
-    right: -8px;
+    right: 7px;
   }
 
   .add-to-playlist-btn img {
@@ -1983,8 +1989,12 @@ body {
   }
 
   .sound-button-container {
-    width: 36px;
-    height: 36px;
+    width: 62px;
+    height: 58px;
+  }
+
+  .add-to-playlist-btn {
+    right: 5px;
   }
 
   .volume-control {
