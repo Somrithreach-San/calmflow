@@ -373,15 +373,15 @@ body {
 .playlist-carousel {
   display: flex;
   gap: 24px;
-  overflow-x: auto;
+  overflow-x: scroll;
+  overflow-y: visible;
   scrollbar-width: none;
   -ms-overflow-style: none;
   padding: 10px 20px;
   width: 100%;
   mask-image: none;
-  scroll-snap-type: x mandatory;
+  scroll-snap-type: x proximity;
   scroll-padding-left: 20px;
-  overflow-y: visible; /* FIX: Allows dropdowns to show */
 }
 
 .playlist-carousel::-webkit-scrollbar {
@@ -1721,25 +1721,29 @@ body {
   /* Sounds Grid */
   .sound-buttons-grid {
     grid-template-columns: repeat(3, minmax(100px, 1fr));
-    gap: 4.5rem 1.25rem;
+    gap: 2rem 1.25rem;
     justify-items: center;
   }
 
   .sound-button-container {
-    width: 120px;
-    height: 96px;
+    width: 100%;
+    height: auto;
+    align-items: center;
   }
 
   .add-to-playlist-btn {
-    right: 20px;
+    right: 5px;
   }
 
+  /* On tablet, volume control stays inline (position: static) */
   .volume-control {
-    width: 120px;
-    top: 72px;
-    height: 24px;
-    z-index: 10;
-    touch-action: none;
+    position: static;
+    transform: none;
+    left: auto;
+    top: auto;
+    width: 110px;
+    height: 20px;
+    margin: 0.25rem auto 0;
   }
 
   /* Forms & Modals */
@@ -1869,17 +1873,22 @@ body {
   }
 
   .sound-button-container {
-    width: 76px;
-    height: 74px;
+    width: 100%;
+    height: auto;
+    align-items: center;
   }
 
-  /* Balanced Short Volume Slider for Mobile */
+  /* Volume control is INLINE on mobile — NOT absolutely positioned */
   .volume-control {
-    width: 76px;
-    top: 46px;
-    height: 24px;
-    z-index: 10;
-    touch-action: none;
+    position: static;
+    transform: none;
+    left: auto;
+    top: auto;
+    width: 80px;
+    height: 22px;
+    margin: 0.25rem auto 0;
+    z-index: auto;
+    touch-action: pan-x;
   }
 
   .volume-slider {
@@ -1887,18 +1896,18 @@ body {
     min-width: 0 !important;
     height: 6px;
     border-width: 1px;
-    touch-action: none;
+    touch-action: pan-x;
   }
 
   .volume-slider::-webkit-slider-thumb {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     border-width: 1.5px;
   }
 
   .volume-slider::-moz-range-thumb {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     border-width: 1.5px;
   }
 
@@ -1906,7 +1915,7 @@ body {
     width: 18px;
     height: 18px;
     top: -4px;
-    right: 10px;
+    right: 0px;
   }
 
   .add-to-playlist-btn img {
@@ -1941,7 +1950,7 @@ body {
   /* 3-Column Sound Grid on Mobile Phones */
   .sound-buttons-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 3.25rem 0.5rem;
+    gap: 1.5rem 0.5rem;
     justify-items: center;
   }
 
@@ -2010,45 +2019,51 @@ body {
     height: 36px;
   }
 
+
   .sound-button-container {
-    width: 68px;
-    height: 68px;
+    width: 100%;
+    height: auto;
+    align-items: center;
   }
 
   .add-to-playlist-btn {
-    right: 7px;
+    right: 0px;
   }
 
   .volume-control {
-    width: 68px;
-    top: 42px;
-    height: 22px;
-    z-index: 10;
-    touch-action: none;
+    position: static;
+    transform: none;
+    left: auto;
+    top: auto;
+    width: 70px;
+    height: 20px;
+    margin: 0.2rem auto 0;
+    z-index: auto;
+    touch-action: pan-x;
   }
 
   .volume-slider {
     width: 100% !important;
     min-width: 0 !important;
-    height: 6px;
+    height: 5px;
     border-width: 1px;
-    touch-action: none;
+    touch-action: pan-x;
   }
 
   .volume-slider::-webkit-slider-thumb {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     border-width: 1.5px;
   }
 
   .volume-slider::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     border-width: 1.5px;
   }
 
   .sound-buttons-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 3rem 0.25rem;
+    gap: 2rem 0.25rem;
   }
 }

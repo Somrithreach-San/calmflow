@@ -938,11 +938,9 @@ class SoundManager {
     });
 
     if (volumeControl) {
-      ["click", "mousedown", "touchstart", "pointerdown"].forEach((evt) => {
-        volumeControl.addEventListener(evt, (e) => {
-          e.stopPropagation();
-        });
-      });
+      // Prevent tapping the volume area from toggling the sound button
+      volumeControl.addEventListener("click", (e) => e.stopPropagation());
+      volumeControl.addEventListener("mousedown", (e) => e.stopPropagation());
     }
 
     if (volumeSlider) {
@@ -957,11 +955,9 @@ class SoundManager {
       volumeSlider.addEventListener("input", handleVolumeChange);
       volumeSlider.addEventListener("change", handleVolumeChange);
 
-      ["click", "mousedown", "touchstart", "pointerdown"].forEach((evt) => {
-        volumeSlider.addEventListener(evt, (e) => {
-          e.stopPropagation();
-        });
-      });
+      // Prevent clicks on slider from toggling the sound button
+      volumeSlider.addEventListener("click", (e) => e.stopPropagation());
+      volumeSlider.addEventListener("mousedown", (e) => e.stopPropagation());
 
       audio.volume = volumeSlider.value / 100;
     }
@@ -1531,42 +1527,40 @@ class SoundManager {
 
     if (!scrollLeftBtn || !scrollRightBtn || !carousel) return;
 
-    const getScrollStep = () => {
-      const card = carousel.querySelector(".playlist-card");
-      if (card) {
-        const cardWidth = card.offsetWidth;
-        const grid = document.getElementById("playlist-grid");
-        const gap = grid
-          ? parseFloat(window.getComputedStyle(grid).gap) || 20
-          : 20;
-        return (cardWidth + gap) * 2;
-      }
-      return 300;
-    };
+    const SCROLL_AMOUNT = 160; // fixed step in px — one card width approx
 
     scrollLeftBtn.addEventListener("click", () => {
       if (scrollLeftBtn.disabled) return;
-      const step = getScrollStep();
-      carousel.scrollBy({ left: -step, behavior: "smooth" });
+      // Clamp: never go below 0
+      const target = Math.max(0, carousel.scrollLeft - SCROLL_AMOUNT);
+      carousel.scrollTo({ left: target, behavior: "smooth" });
+      // Update after animation (~400ms)
+      setTimeout(() => this.updateCarouselButtons(), 420);
     });
 
     scrollRightBtn.addEventListener("click", () => {
       if (scrollRightBtn.disabled) return;
-      const step = getScrollStep();
-      carousel.scrollBy({ left: step, behavior: "smooth" });
+      const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+      // Clamp: never go past the end
+      const target = Math.min(maxScroll, carousel.scrollLeft + SCROLL_AMOUNT);
+      carousel.scrollTo({ left: target, behavior: "smooth" });
+      // Update after animation (~400ms)
+      setTimeout(() => this.updateCarouselButtons(), 420);
     });
 
     carousel.addEventListener("scroll", () => {
-      this.updateCarouselButtons();
+      clearTimeout(this._carouselScrollTimer);
+      this._carouselScrollTimer = setTimeout(() => {
+        this.updateCarouselButtons();
+      }, 80);
     });
 
     window.addEventListener("resize", () => {
       this.updateCarouselButtons();
     });
 
-    setTimeout(() => {
-      this.updateCarouselButtons();
-    }, 100);
+    // Initial state — delay to ensure DOM is fully laid out
+    setTimeout(() => this.updateCarouselButtons(), 150);
   }
 
   updateCarouselButtons() {
@@ -1576,20 +1570,11 @@ class SoundManager {
 
     if (!scrollLeftBtn || !scrollRightBtn || !carousel) return;
 
-    const maxScrollLeft = Math.max(
-      0,
-      carousel.scrollWidth - carousel.clientWidth
-    );
+    const scrollLeft = Math.round(carousel.scrollLeft);
+    const maxScroll = Math.round(carousel.scrollWidth - carousel.clientWidth);
 
-    if (maxScrollLeft <= 4) {
-      scrollLeftBtn.disabled = true;
-      scrollLeftBtn.classList.add("disabled");
-      scrollRightBtn.disabled = true;
-      scrollRightBtn.classList.add("disabled");
-      return;
-    }
-
-    if (carousel.scrollLeft <= 4) {
+    // LEFT arrow: disable at start
+    if (scrollLeft <= 2) {
       scrollLeftBtn.disabled = true;
       scrollLeftBtn.classList.add("disabled");
     } else {
@@ -1597,7 +1582,8 @@ class SoundManager {
       scrollLeftBtn.classList.remove("disabled");
     }
 
-    if (carousel.scrollLeft >= maxScrollLeft - 4) {
+    // RIGHT arrow: disable when nothing more to scroll
+    if (maxScroll <= 2 || scrollLeft >= maxScroll - 2) {
       scrollRightBtn.disabled = true;
       scrollRightBtn.classList.add("disabled");
     } else {
