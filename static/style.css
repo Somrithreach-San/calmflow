@@ -223,6 +223,15 @@ body {
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
+.arrow-btn:disabled,
+.arrow-btn.disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none !important;
+  box-shadow: 2px 2px 0px 0px var(--shadow-color) !important;
+}
+
 .playlist-card:hover,
 .arrow-btn:hover {
   transform: translateY(-2px) translateX(-2px);
@@ -524,6 +533,13 @@ body {
   font-family: "Impact", sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+.site-version {
+  font-size: 0.95rem;
+  opacity: 0.5;
+  margin-top: 0.5rem;
+  letter-spacing: 1px;
 }
 
 .volume-control-container {
@@ -1721,6 +1737,9 @@ body {
   .volume-control {
     width: 120px;
     top: 72px;
+    height: 24px;
+    z-index: 10;
+    touch-action: none;
   }
 
   /* Forms & Modals */
@@ -1850,33 +1869,36 @@ body {
   }
 
   .sound-button-container {
-    width: 70px;
-    height: 64px;
+    width: 76px;
+    height: 74px;
   }
 
   /* Balanced Short Volume Slider for Mobile */
   .volume-control {
-    width: 70px;
-    top: 48px;
-    height: 12px;
+    width: 76px;
+    top: 46px;
+    height: 24px;
+    z-index: 10;
+    touch-action: none;
   }
 
   .volume-slider {
     width: 100% !important;
     min-width: 0 !important;
-    height: 4px;
+    height: 6px;
     border-width: 1px;
+    touch-action: none;
   }
 
   .volume-slider::-webkit-slider-thumb {
-    width: 10px;
-    height: 10px;
+    width: 18px;
+    height: 18px;
     border-width: 1.5px;
   }
 
   .volume-slider::-moz-range-thumb {
-    width: 10px;
-    height: 10px;
+    width: 18px;
+    height: 18px;
     border-width: 1.5px;
   }
 
@@ -1884,7 +1906,7 @@ body {
     width: 18px;
     height: 18px;
     top: -4px;
-    right: 7px;
+    right: 10px;
   }
 
   .add-to-playlist-btn img {
@@ -1989,17 +2011,40 @@ body {
   }
 
   .sound-button-container {
-    width: 62px;
-    height: 58px;
+    width: 68px;
+    height: 68px;
   }
 
   .add-to-playlist-btn {
-    right: 5px;
+    right: 7px;
   }
 
   .volume-control {
-    width: 62px;
-    top: 44px;
+    width: 68px;
+    top: 42px;
+    height: 22px;
+    z-index: 10;
+    touch-action: none;
+  }
+
+  .volume-slider {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 6px;
+    border-width: 1px;
+    touch-action: none;
+  }
+
+  .volume-slider::-webkit-slider-thumb {
+    width: 16px;
+    height: 16px;
+    border-width: 1.5px;
+  }
+
+  .volume-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-width: 1.5px;
   }
 
   .sound-buttons-grid {

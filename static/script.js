@@ -937,14 +937,32 @@ class SoundManager {
       }
     });
 
+    if (volumeControl) {
+      ["click", "mousedown", "touchstart", "pointerdown"].forEach((evt) => {
+        volumeControl.addEventListener(evt, (e) => {
+          e.stopPropagation();
+        });
+      });
+    }
+
     if (volumeSlider) {
       this.updateSliderProgress(volumeSlider);
 
-      volumeSlider.addEventListener("input", (e) => {
+      const handleVolumeChange = (e) => {
         this.updateSliderProgress(e.target);
         audio.volume = e.target.value / 100;
         this.updateAllVolumes();
+      };
+
+      volumeSlider.addEventListener("input", handleVolumeChange);
+      volumeSlider.addEventListener("change", handleVolumeChange);
+
+      ["click", "mousedown", "touchstart", "pointerdown"].forEach((evt) => {
+        volumeSlider.addEventListener(evt, (e) => {
+          e.stopPropagation();
+        });
       });
+
       audio.volume = volumeSlider.value / 100;
     }
 
@@ -1513,13 +1531,79 @@ class SoundManager {
 
     if (!scrollLeftBtn || !scrollRightBtn || !carousel) return;
 
+    const getScrollStep = () => {
+      const card = carousel.querySelector(".playlist-card");
+      if (card) {
+        const cardWidth = card.offsetWidth;
+        const grid = document.getElementById("playlist-grid");
+        const gap = grid
+          ? parseFloat(window.getComputedStyle(grid).gap) || 20
+          : 20;
+        return (cardWidth + gap) * 2;
+      }
+      return 300;
+    };
+
     scrollLeftBtn.addEventListener("click", () => {
-      carousel.scrollBy({ left: -300, behavior: "smooth" });
+      if (scrollLeftBtn.disabled) return;
+      const step = getScrollStep();
+      carousel.scrollBy({ left: -step, behavior: "smooth" });
     });
 
     scrollRightBtn.addEventListener("click", () => {
-      carousel.scrollBy({ left: 300, behavior: "smooth" });
+      if (scrollRightBtn.disabled) return;
+      const step = getScrollStep();
+      carousel.scrollBy({ left: step, behavior: "smooth" });
     });
+
+    carousel.addEventListener("scroll", () => {
+      this.updateCarouselButtons();
+    });
+
+    window.addEventListener("resize", () => {
+      this.updateCarouselButtons();
+    });
+
+    setTimeout(() => {
+      this.updateCarouselButtons();
+    }, 100);
+  }
+
+  updateCarouselButtons() {
+    const scrollLeftBtn = document.getElementById("scroll-left");
+    const scrollRightBtn = document.getElementById("scroll-right");
+    const carousel = document.querySelector(".playlist-carousel");
+
+    if (!scrollLeftBtn || !scrollRightBtn || !carousel) return;
+
+    const maxScrollLeft = Math.max(
+      0,
+      carousel.scrollWidth - carousel.clientWidth
+    );
+
+    if (maxScrollLeft <= 4) {
+      scrollLeftBtn.disabled = true;
+      scrollLeftBtn.classList.add("disabled");
+      scrollRightBtn.disabled = true;
+      scrollRightBtn.classList.add("disabled");
+      return;
+    }
+
+    if (carousel.scrollLeft <= 4) {
+      scrollLeftBtn.disabled = true;
+      scrollLeftBtn.classList.add("disabled");
+    } else {
+      scrollLeftBtn.disabled = false;
+      scrollLeftBtn.classList.remove("disabled");
+    }
+
+    if (carousel.scrollLeft >= maxScrollLeft - 4) {
+      scrollRightBtn.disabled = true;
+      scrollRightBtn.classList.add("disabled");
+    } else {
+      scrollRightBtn.disabled = false;
+      scrollRightBtn.classList.remove("disabled");
+    }
   }
 
   async loadUserPlaylists() {
@@ -1617,6 +1701,10 @@ class SoundManager {
     console.log(
       `✅ Added ${sortedPlaylists.length} user playlists BEFORE random playlist`
     );
+
+    setTimeout(() => {
+      this.updateCarouselButtons();
+    }, 100);
   }
 
   createPlaylistCard(playlist) {
