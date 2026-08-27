@@ -216,7 +216,7 @@
                 title="Login Required"
               >
                 <img
-                  src="{{ url_for('static', filename='icons/add-locked.png') }}"
+                  src="{{ url_for('static', filename='icons/add.png') }}"
                   alt="Add"
                 />
               </button>
@@ -248,7 +248,7 @@
                 title="Login Required"
               >
                 <img
-                  src="{{ url_for('static', filename='icons/add-locked.png') }}"
+                  src="{{ url_for('static', filename='icons/add.png') }}"
                   alt="Add"
                 />
               </button>
@@ -313,7 +313,6 @@
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <!-- Delete Confirmation Modal - Single Button (Normal Style) -->
     <div id="delete-confirmation-modal" class="modal">
       <div class="modal-content">
         <!-- X button for closing -->
@@ -321,7 +320,7 @@
 
         <div class="modal-body">
           <p class="warning-text">
-            Are you sure you want to delete<span
+            Are you sure you want to delete <span
               id="playlist-to-delete-name"
             ></span
             >?
@@ -329,8 +328,8 @@
         </div>
 
         <div class="modal-footer">
-          <!-- Single Delete button with normal styling -->
-          <button class="btn" id="confirm-delete-btn">Delete</button>
+          <button class="btn btn-cancel" id="cancel-delete-btn">Cancel</button>
+          <button class="btn btn-delete" id="confirm-delete-btn">Delete</button>
         </div>
       </div>
     </div>

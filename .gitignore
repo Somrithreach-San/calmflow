@@ -3,3 +3,7 @@ __pycache__/
 .env
 venv/
 .env.local
+instance/
+*.db
+*.log
+*.err

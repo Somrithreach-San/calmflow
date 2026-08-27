@@ -37,6 +37,18 @@ class SoundManager {
   }
 
   async init() {
+    this.setupThemeToggle();
+    this.setupUserMenu();
+    this.setupGlobalVolumeControl();
+    this.initSliderThumbEffect();
+
+    // Check if on player page (index.html)
+    const playlistGrid = document.getElementById("playlist-grid");
+    if (!playlistGrid) {
+      console.log("ℹ️ Not on player page, skipping player initialization");
+      return;
+    }
+
     try {
       console.log("🎵 Initializing SoundManager...");
       console.log("👤 User logged in:", this.isUserLoggedIn);
@@ -53,11 +65,7 @@ class SoundManager {
       this.initializeAccessibleSounds(soundsData);
       this.setupPlaylistHandlers();
       this.setupClearButton();
-      this.setupGlobalVolumeControl();
-      this.setupThemeToggle();
-      this.setupUserMenu();
       this.setupCarousel();
-      this.initSliderThumbEffect();
       this.setupPlaylistModal();
       this.setupAddToPlaylistModal();
       this.setupDeleteConfirmationModal();
@@ -968,11 +976,10 @@ class SoundManager {
     });
 
     if (volumeSlider) {
-      setTimeout(() => {
-        this.initSliderThumbEffect();
-      }, 100);
+      this.updateSliderProgress(volumeSlider);
 
       volumeSlider.addEventListener("input", (e) => {
+        this.updateSliderProgress(e.target);
         audio.volume = e.target.value / 100;
         this.updateAllVolumes();
       });
@@ -1452,9 +1459,11 @@ class SoundManager {
     if (!globalSlider || !globalIcon) return;
 
     this.globalVolume = globalSlider.value / 100;
+    this.updateSliderProgress(globalSlider);
 
     globalSlider.addEventListener("input", (e) => {
       this.globalVolume = e.target.value / 100;
+      this.updateSliderProgress(e.target);
       this.updateAllVolumes();
       globalIcon.style.opacity = this.globalVolume === 0 ? "0.5" : "1";
     });
@@ -1468,13 +1477,10 @@ class SoundManager {
         this.globalVolume = this.previousVolume || 0.5;
         globalSlider.value = this.globalVolume * 100;
       }
+      this.updateSliderProgress(globalSlider);
       this.updateAllVolumes();
       globalIcon.style.opacity = this.globalVolume === 0 ? "0.5" : "1";
     });
-
-    setTimeout(() => {
-      this.initSliderThumbEffect();
-    }, 100);
   }
 
   updateAllVolumes() {
@@ -1668,16 +1674,16 @@ class SoundManager {
       </div>
       <h3 class="playlist-title">${playlist.name}</h3>
       <div class="playlist-menu">
-        <button class="playlist-menu-btn" title="Playlist options">
+        <button type="button" class="playlist-menu-btn" title="Playlist options">
           ⋮
         </button>
         <div class="dropdown-menu">
-          <button class="dropdown-item edit-playlist-btn" data-playlist-id="${
+          <button type="button" class="dropdown-item edit-playlist-btn" data-playlist-id="${
             playlist.id
           }">
             Edit
           </button>
-          <button class="dropdown-item delete-playlist-btn" data-playlist-id="${
+          <button type="button" class="dropdown-item delete-playlist-btn" data-playlist-id="${
             playlist.id
           }" data-playlist-name="${playlist.name}">
             Delete
@@ -2013,54 +2019,39 @@ class SoundManager {
     });
   }
 
+  updateSliderProgress(slider) {
+    if (!slider) return;
+    const min = parseFloat(slider.min) || 0;
+    const max = parseFloat(slider.max) || 100;
+    const val = parseFloat(slider.value) || 0;
+    const percent = ((val - min) / (max - min)) * 100;
+    slider.style.setProperty("--slider-progress", `${percent}%`);
+  }
+
   initSliderThumbEffect() {
     const sliders = document.querySelectorAll('input[type="range"]');
 
     sliders.forEach((slider) => {
-      let thumbDiv = slider.parentElement.querySelector(".slider-thumb");
-      if (!thumbDiv) {
-        thumbDiv = document.createElement("div");
-        thumbDiv.className = "slider-thumb";
-        slider.parentElement.appendChild(thumbDiv);
-      }
+      this.updateSliderProgress(slider);
 
-      const updateThumb = () => {
-        const value = slider.value;
-        const min = slider.min || 0;
-        const max = slider.max || 100;
-        const percent = ((value - min) / (max - min)) * 100;
-
-        thumbDiv.style.left = `calc(${percent}% - 8px)`;
-      };
-
-      updateThumb();
-
-      slider.addEventListener("input", updateThumb);
-
-      slider.addEventListener("mouseenter", () => {
-        thumbDiv.style.opacity = "1";
-      });
-
-      slider.addEventListener("mouseleave", () => {
-        if (!slider.matches(":active")) {
-          thumbDiv.style.opacity = "0";
-        }
-      });
-
-      slider.addEventListener("mousedown", () => {
-        thumbDiv.style.opacity = "1";
-      });
-
-      slider.addEventListener("mouseup", () => {
-        setTimeout(() => {
-          if (!slider.matches(":hover")) {
-            thumbDiv.style.opacity = "0";
-          }
-        }, 1000);
+      slider.addEventListener("input", () => {
+        this.updateSliderProgress(slider);
       });
     });
 
-    console.log("🎛️ Slider thumb effect initialized");
+    // Close any open playlist dropdown menu when clicking outside
+    if (!this._dropdownOutsideListenerAttached) {
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest(".playlist-menu")) {
+          document.querySelectorAll(".dropdown-menu.show").forEach((menu) => {
+            menu.classList.remove("show");
+          });
+        }
+      });
+      this._dropdownOutsideListenerAttached = true;
+    }
+
+    console.log("🎛️ Slider progress effects initialized");
   }
 
   showToast(message, type = "info") {

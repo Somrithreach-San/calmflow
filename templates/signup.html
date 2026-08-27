@@ -1,8 +1,21 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Prevent theme flash -->
+    <script>
+      (function () {
+        try {
+          const savedTheme = localStorage.getItem("theme");
+          if (savedTheme) {
+            document.documentElement.setAttribute("data-theme", savedTheme);
+          }
+        } catch (e) {
+          console.log("Theme initialization error:", e);
+        }
+      })();
+    </script>
     <title>Sign Up - Calm Flow</title>
     <link
       rel="stylesheet"

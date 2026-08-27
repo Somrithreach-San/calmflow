@@ -2,4 +2,4 @@ Flask
 Flask-SQLAlchemy
 Flask-Login
 werkzeug
-pyodbc
+gunicorn
