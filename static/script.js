@@ -102,13 +102,15 @@ class SoundManager {
       // Show login message when clicked
       createPlaylistBtn.addEventListener("click", (e) => {
         e.preventDefault();
+        if (document.activeElement) document.activeElement.blur();
         const wrapper = createPlaylistBtn.closest(".create-playlist-wrapper");
         if (wrapper) {
+          document.querySelectorAll(".show-message").forEach((el) => el.classList.remove("show-message"));
           wrapper.classList.add("show-message");
           clearTimeout(wrapper._msgTimeout);
           wrapper._msgTimeout = setTimeout(() => {
             wrapper.classList.remove("show-message");
-          }, 2000);
+          }, 1800);
         }
       });
       return;
@@ -914,11 +916,6 @@ class SoundManager {
             .then(() => {
               this.updateButtonState(soundName, true);
               console.log(`▶️ Manually playing: ${soundName}`);
-              const volumeControl =
-                soundContainer.querySelector(".volume-control");
-              if (volumeControl) {
-                volumeControl.classList.remove("hidden");
-              }
             })
             .catch((error) => {
               console.error(`❌ Error playing ${soundName}:`, error);
@@ -926,24 +923,13 @@ class SoundManager {
         }
       } else {
         audio.pause();
+        audio.currentTime = 0;
         this.updateButtonState(soundName, false);
-        if (!soundContainer.matches(":hover")) {
-          const volumeControl = soundContainer.querySelector(".volume-control");
-          if (volumeControl) {
-            volumeControl.classList.add("hidden");
-          }
-        }
       }
     });
 
     const volumeSlider = soundContainer.querySelector(".volume-slider");
     const volumeControl = soundContainer.querySelector(".volume-control");
-
-    button.addEventListener("click", () => {
-      if (volumeControl && !audio.paused) {
-        volumeControl.classList.remove("hidden");
-      }
-    });
 
     soundContainer.addEventListener("mouseleave", () => {
       if (audio.paused && volumeControl) {
@@ -963,15 +949,11 @@ class SoundManager {
     }
 
     audio.addEventListener("play", () => {
-      if (volumeControl) {
-        volumeControl.classList.remove("hidden");
-      }
+      this.updateButtonState(soundName, true);
     });
 
     audio.addEventListener("pause", () => {
-      if (volumeControl && !soundContainer.matches(":hover")) {
-        volumeControl.classList.add("hidden");
-      }
+      this.updateButtonState(soundName, false);
     });
 
     console.log(`✅ Initialized sound: ${soundName}`);
@@ -1378,13 +1360,20 @@ class SoundManager {
     if (!soundContainer) return;
 
     const button = soundContainer.querySelector(".sound-button");
+    const volumeControl = soundContainer.querySelector(".volume-control");
 
     if (isPlaying) {
       button.classList.add("playing");
+      if (volumeControl) {
+        volumeControl.classList.remove("hidden");
+      }
       const icon = button.querySelector(".sound-icon");
       if (icon) icon.style.transform = "scale(1.05)";
     } else {
       button.classList.remove("playing");
+      if (volumeControl) {
+        volumeControl.classList.add("hidden");
+      }
       const icon = button.querySelector(".sound-icon");
       if (icon) icon.style.transform = "scale(1)";
     }
@@ -1782,13 +1771,15 @@ class SoundManager {
       if (disabledAddBtn) {
         e.preventDefault();
         e.stopPropagation();
+        if (document.activeElement) document.activeElement.blur();
         const container = disabledAddBtn.closest(".sound-button-container");
         if (container) {
+          document.querySelectorAll(".show-message").forEach((el) => el.classList.remove("show-message"));
           container.classList.add("show-message");
           clearTimeout(container._msgTimeout);
           container._msgTimeout = setTimeout(() => {
             container.classList.remove("show-message");
-          }, 2000);
+          }, 1800);
         }
         return;
       }
@@ -1797,11 +1788,13 @@ class SoundManager {
       if (premiumContainer && !this.isUserLoggedIn && e.target.closest(".sound-button")) {
         e.preventDefault();
         e.stopPropagation();
+        if (document.activeElement) document.activeElement.blur();
+        document.querySelectorAll(".show-message").forEach((el) => el.classList.remove("show-message"));
         premiumContainer.classList.add("show-message");
         clearTimeout(premiumContainer._msgTimeout);
         premiumContainer._msgTimeout = setTimeout(() => {
           premiumContainer.classList.remove("show-message");
-        }, 2000);
+        }, 1800);
         return;
       }
 

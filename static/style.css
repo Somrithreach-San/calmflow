@@ -449,7 +449,7 @@ body {
   outline: none;
   position: relative;
   cursor: pointer;
-  min-width: 140px;
+  min-width: 0;
   transition: background 0.05s ease;
 }
 
@@ -592,11 +592,17 @@ body {
   color: var(--text-primary);
 }
 
-.sound-button-container.premium:hover::after,
+@media (hover: hover) {
+  .sound-button-container.premium:hover::after {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
 .sound-button-container.premium.show-message::after,
 .sound-button-container.show-message::after {
-  opacity: 1;
-  visibility: visible;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 /* HEADER CONTROLS (USER & THEME) */
@@ -1428,10 +1434,17 @@ body {
   color: var(--text-primary);
 }
 
-.create-playlist-wrapper.premium:hover::after,
-.create-playlist-wrapper.premium.show-message::after {
-  opacity: 1;
-  visibility: visible;
+@media (hover: hover) {
+  .create-playlist-wrapper.premium:hover::after {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+.create-playlist-wrapper.premium.show-message::after,
+.create-playlist-wrapper.show-message::after {
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 /* Ensure the button keeps its size and position */
@@ -1835,27 +1848,29 @@ body {
     height: 40px;
   }
 
-  /* Extra Short Volume Slider for Mobile */
+  /* Balanced Short Volume Slider for Mobile */
   .volume-control {
-    width: 48px;
+    width: 70px;
     top: 48px;
-    height: 14px;
+    height: 12px;
   }
 
   .volume-slider {
-    height: 5px;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 4px;
     border-width: 1px;
   }
 
   .volume-slider::-webkit-slider-thumb {
-    width: 11px;
-    height: 11px;
+    width: 10px;
+    height: 10px;
     border-width: 1.5px;
   }
 
   .volume-slider::-moz-range-thumb {
-    width: 11px;
-    height: 11px;
+    width: 10px;
+    height: 10px;
     border-width: 1.5px;
   }
 
@@ -1973,8 +1988,8 @@ body {
   }
 
   .volume-control {
-    width: 56px;
-    top: 45px;
+    width: 62px;
+    top: 44px;
   }
 
   .sound-buttons-grid {
