@@ -72,14 +72,23 @@
                 </div>
                 <div class="form-group">
                   <label for="password">Password</label>
-                  <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    value="password123"
-                    required
-                    autocomplete="current-password"
-                  />
+                  <div class="password-input-wrapper">
+                    <input
+                      type="password"
+                      id="password"
+                      name="password"
+                      value="password123"
+                      required
+                      autocomplete="current-password"
+                    />
+                    <button
+                      type="button"
+                      class="toggle-password-btn"
+                      aria-label="Toggle password visibility"
+                    >
+                      Show
+                    </button>
+                  </div>
                 </div>
                 <button type="submit" class="action-button">Login</button>
               </form>
@@ -94,11 +103,8 @@
     </div>
 
     <div class="toast-container">
-      <div class="toast toast-info toast-persistent">
-        <div>
-          <p class="toast-message" style="font-weight: 400; margin-bottom: 2px;">💡 Demo Account Pre-filled</p>
-          <p class="toast-message" style="font-size: 0.8rem; opacity: 0.8; font-family: monospace; text-transform: none;">test@example.com / password123</p>
-        </div>
+      <div class="toast toast-info">
+        <p class="toast-message">Demo account has been filled out for you.</p>
         <button class="toast-close">&times;</button>
       </div>
       {% with messages = get_flashed_messages(with_categories=true) %} {% if

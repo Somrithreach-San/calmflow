@@ -30,6 +30,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  touch-action: manipulation;
 }
 
 body {
@@ -851,8 +852,10 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: calc(100vh - 200px);
-  padding: 2rem 0;
+  min-height: calc(100vh - 240px);
+  padding: 2.5rem 0;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .login-box,
@@ -866,6 +869,7 @@ body {
   width: 100%;
   max-width: 380px;
   text-align: center;
+  margin: 0 auto;
 }
 
 .login-form-container h2,
@@ -925,6 +929,58 @@ body {
 .form-group input:hover {
   transform: translateY(-1px) translateX(-1px);
   box-shadow: 2px 2px 0px 0px var(--border-color);
+}
+
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-input-wrapper input {
+  width: 100%;
+  padding-right: 50px;
+}
+
+.toggle-password-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%) !important;
+  width: 42px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: transparent !important;
+  border: none !important;
+  color: var(--text-primary) !important;
+  font-family: "Impact", sans-serif;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  opacity: 0.8 !important;
+  user-select: none;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent;
+  transition: none !important;
+}
+
+.toggle-password-btn:hover,
+.toggle-password-btn:active,
+.toggle-password-btn:focus,
+.toggle-password-btn:focus-visible {
+  opacity: 0.8 !important;
+  color: var(--text-primary) !important;
+  outline: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: translateY(-50%) !important;
 }
 
 /* Button styles - consolidated */
@@ -1750,8 +1806,11 @@ body {
   .login-container,
   .signup-container,
   .user-profile-container {
-    min-height: calc(100vh - 160px);
-    padding: 1rem 0;
+    min-height: calc(100vh - 200px);
+    padding: 2rem 0;
+    width: 100%;
+    margin: 0 auto;
+    align-items: center;
   }
 
   .login-box,
@@ -1760,6 +1819,7 @@ body {
     padding: 1.5rem;
     margin: 0 auto;
     max-width: 340px;
+    width: 100%;
   }
 
   .login-form-container h2,
@@ -1954,11 +2014,23 @@ body {
     justify-items: center;
   }
 
+  .login-container,
+  .signup-container,
+  .user-profile-container {
+    min-height: calc(100vh - 160px);
+    padding: 1.5rem 0;
+    width: 100%;
+    margin: 0 auto;
+    align-items: center;
+  }
+
   .login-box,
   .signup-box,
   .user-profile-box {
-    padding: 1.25rem;
-    max-width: 300px;
+    padding: 1.5rem 1.25rem;
+    max-width: 320px;
+    width: 100%;
+    margin: 0 auto;
   }
 
   .login-form,
@@ -2065,5 +2137,24 @@ body {
   .sound-buttons-grid {
     grid-template-columns: repeat(3, 1fr);
     gap: 2rem 0.25rem;
+  }
+
+  .login-container,
+  .signup-container,
+  .user-profile-container {
+    min-height: calc(100vh - 140px);
+    padding: 1.25rem 0;
+    width: 100%;
+    margin: 0 auto;
+    align-items: center;
+  }
+
+  .login-box,
+  .signup-box,
+  .user-profile-box {
+    padding: 1.25rem 1rem;
+    max-width: 290px;
+    width: 100%;
+    margin: 0 auto;
   }
 }

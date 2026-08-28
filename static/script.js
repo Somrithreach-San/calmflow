@@ -2175,9 +2175,31 @@ function setupToasts() {
   });
 }
 
+function setupPasswordToggles() {
+  const toggleButtons = document.querySelectorAll(".toggle-password-btn");
+  toggleButtons.forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const wrapper = btn.closest(".password-input-wrapper");
+      if (!wrapper) return;
+      const input = wrapper.querySelector("input");
+      if (!input) return;
+
+      if (input.type === "password") {
+        input.type = "text";
+        btn.textContent = "Hide";
+      } else {
+        input.type = "password";
+        btn.textContent = "Show";
+      }
+    });
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   console.log("🚀 Calm Flow initializing...");
   window.soundManager = new SoundManager();
   setupToasts();
+  setupPasswordToggles();
   console.log("🎉 Calm Flow ready!");
 });
