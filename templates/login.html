@@ -96,6 +96,11 @@
                 Don't have an account?
                 <a href="{{ url_for('signup') }}">Sign up</a>
               </p>
+              <div class="guest-link-wrapper" style="margin-top: 1.25rem; text-align: center;">
+                <a href="{{ url_for('index') }}" class="guest-link" style="color: var(--text-primary); font-family: 'Impact', sans-serif; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px; opacity: 0.7; text-decoration: none; border-bottom: 1px dashed var(--border-color); padding-bottom: 2px;">
+                  &larr; Explore as Guest (No Login Required)
+                </a>
+              </div>
             </div>
           </div>
         </div>
