@@ -52,8 +52,6 @@ def login():
         flash('You are already logged in', 'info')
         return redirect(url_for('index'))
     
-    show_demo = not session.get('demo_completed', False)
-    
     if request.method == 'POST':
         email = request.form['email'].strip()
         password = request.form['password']
@@ -62,13 +60,12 @@ def login():
         
         if user and user.check_password(password):
             session['user_id'] = user.id
-            session['demo_completed'] = True
             flash('Login successful!', 'success')
             return redirect(url_for('index'))
         else:
             flash('Invalid email or password', 'error')
     
-    return render_template('login.html', show_demo=show_demo)
+    return render_template('login.html')
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -92,7 +89,6 @@ def signup():
             db.session.commit()
             
             session['user_id'] = new_user.id
-            session['demo_completed'] = True
             flash('Account created successfully!', 'success')
             return redirect(url_for('index'))
     

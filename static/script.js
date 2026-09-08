@@ -99,20 +99,26 @@ class SoundManager {
       createPlaylistBtn.classList.add("disabled");
       createPlaylistBtn.title = "Login to create playlists";
 
-      // Show login message when clicked
-      createPlaylistBtn.addEventListener("click", (e) => {
+      // Show login message when clicked or tapped
+      const wrapper = createPlaylistBtn.closest(".create-playlist-wrapper");
+      const showLoginMessage = (e) => {
         e.preventDefault();
+        e.stopPropagation();
         if (document.activeElement) document.activeElement.blur();
-        const wrapper = createPlaylistBtn.closest(".create-playlist-wrapper");
+        document.querySelectorAll(".show-message").forEach((el) => el.classList.remove("show-message"));
         if (wrapper) {
-          document.querySelectorAll(".show-message").forEach((el) => el.classList.remove("show-message"));
           wrapper.classList.add("show-message");
           clearTimeout(wrapper._msgTimeout);
           wrapper._msgTimeout = setTimeout(() => {
             wrapper.classList.remove("show-message");
-          }, 1800);
+          }, 2000);
         }
-      });
+      };
+
+      if (wrapper) {
+        wrapper.addEventListener("click", showLoginMessage);
+      }
+      createPlaylistBtn.addEventListener("click", showLoginMessage);
       return;
     }
 
@@ -2288,47 +2294,10 @@ function setupPasswordToggles() {
   });
 }
 
-function setupDemoLoginBehavior() {
-  // If user is currently logged in, record that demo login is completed
-  if (document.body.dataset.userLoggedIn === "true") {
-    localStorage.setItem("calmflow_demo_completed", "true");
-  }
-
-  const loginForm = document.querySelector(".login-form");
-  if (!loginForm) return;
-
-  const demoToast = document.getElementById("demo-toast");
-
-  // If user has logged in previously, clear demo prefill and remove toast
-  if (localStorage.getItem("calmflow_demo_completed") === "true") {
-    if (demoToast) {
-      demoToast.remove();
-    }
-    const emailInput = document.getElementById("email");
-    const passwordInput = document.getElementById("password");
-    if (emailInput && emailInput.value === "test@example.com") {
-      emailInput.value = "";
-    }
-    if (passwordInput && passwordInput.value === "password123") {
-      passwordInput.value = "";
-    }
-  }
-
-  // When submitting login form, immediately dismiss demo toast
-  loginForm.addEventListener("submit", () => {
-    if (demoToast) {
-      demoToast.style.opacity = "0";
-      demoToast.style.transform = "translateY(-10px)";
-      setTimeout(() => demoToast.remove(), 250);
-    }
-  });
-}
-
 document.addEventListener("DOMContentLoaded", () => {
   console.log("🚀 Calm Flow initializing...");
   window.soundManager = new SoundManager();
   setupToasts();
   setupPasswordToggles();
-  setupDemoLoginBehavior();
   console.log("🎉 Calm Flow ready!");
 });
