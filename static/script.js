@@ -1439,16 +1439,26 @@ class SoundManager {
 
     if (!globalSlider) return;
 
+    const updateVolumeIcon = (volume) => {
+      if (!globalIcon) return;
+      if (volume <= 0) {
+        globalIcon.src = "/static/icons/volume_mute.png";
+        globalIcon.alt = "Muted";
+      } else {
+        globalIcon.src = "/static/icons/volume.png";
+        globalIcon.alt = "Volume";
+      }
+    };
+
     this.globalVolume = globalSlider.value / 100;
     this.updateSliderProgress(globalSlider);
+    updateVolumeIcon(this.globalVolume);
 
     globalSlider.addEventListener("input", (e) => {
       this.globalVolume = e.target.value / 100;
       this.updateSliderProgress(e.target);
       this.updateAllVolumes();
-      if (globalIcon) {
-        globalIcon.style.opacity = this.globalVolume === 0 ? "0.5" : "1";
-      }
+      updateVolumeIcon(this.globalVolume);
     });
 
     const toggleButton = globalBtn || globalIcon;
@@ -1477,9 +1487,7 @@ class SoundManager {
           }
           this.updateSliderProgress(globalSlider);
           this.updateAllVolumes();
-          if (globalIcon) {
-            globalIcon.style.opacity = this.globalVolume === 0 ? "0.5" : "1";
-          }
+          updateVolumeIcon(this.globalVolume);
         }
       });
     }
