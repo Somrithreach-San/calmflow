@@ -65,7 +65,7 @@
                     type="email"
                     id="email"
                     name="email"
-                    value="test@example.com"
+                    value="{{ 'test@example.com' if show_demo else '' }}"
                     required
                     autocomplete="email"
                   />
@@ -77,7 +77,7 @@
                       type="password"
                       id="password"
                       name="password"
-                      value="password123"
+                      value="{{ 'password123' if show_demo else '' }}"
                       required
                       autocomplete="current-password"
                     />
@@ -103,10 +103,12 @@
     </div>
 
     <div class="toast-container">
-      <div class="toast toast-info">
+      {% if show_demo %}
+      <div class="toast toast-info" id="demo-toast">
         <p class="toast-message">Demo account has been filled out for you.</p>
         <button class="toast-close">&times;</button>
       </div>
+      {% endif %}
       {% with messages = get_flashed_messages(with_categories=true) %} {% if
       messages %} {% for category, message in messages %}
       <div class="toast toast-{{ category }}">

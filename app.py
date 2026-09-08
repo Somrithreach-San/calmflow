@@ -52,6 +52,8 @@ def login():
         flash('You are already logged in', 'info')
         return redirect(url_for('index'))
     
+    show_demo = not session.get('demo_completed', False)
+    
     if request.method == 'POST':
         email = request.form['email'].strip()
         password = request.form['password']
@@ -60,12 +62,13 @@ def login():
         
         if user and user.check_password(password):
             session['user_id'] = user.id
+            session['demo_completed'] = True
             flash('Login successful!', 'success')
             return redirect(url_for('index'))
         else:
             flash('Invalid email or password', 'error')
     
-    return render_template('login.html')
+    return render_template('login.html', show_demo=show_demo)
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -89,6 +92,7 @@ def signup():
             db.session.commit()
             
             session['user_id'] = new_user.id
+            session['demo_completed'] = True
             flash('Account created successfully!', 'success')
             return redirect(url_for('index'))
     
@@ -474,6 +478,19 @@ def initialize_database():
         db.create_all()
         if Group.query.count() == 0:
             seed_fresh_data()
+        else:
+            # Ensure demo user exists for recruiter testing
+            demo_user = User.query.filter_by(email='test@example.com').first()
+            if not demo_user:
+                demo_user = User(
+                    username='testuser',
+                    email='test@example.com',
+                    is_premium=True
+                )
+                demo_user.set_password('password123')
+                db.session.add(demo_user)
+                db.session.commit()
+                print("Demo user ensured in database")
 
 # Auto-initialize database on startup
 initialize_database()

@@ -21,7 +21,7 @@
     <title>Calm Flow</title>
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='style.css') }}"
+      href="{{ url_for('static', filename='style.css') }}?v=1.0.2"
     />
     <link
       rel="icon"
@@ -37,21 +37,32 @@
 
           <!-- Global volume controls in header center -->
           <div class="header-center-controls">
-            <div class="header-volume-controls">
-              <img
-                id="global-volume-icon"
-                src="{{ url_for('static', filename='icons/volume.png') }}"
-                alt="Volume"
-                class="global-volume-icon"
-              />
-              <input
-                id="global-volume"
-                class="volume-slider global-slider"
-                type="range"
-                min="0"
-                max="100"
-                value="50"
-              />
+            <div class="header-volume-controls" id="header-volume-controls">
+              <button
+                type="button"
+                id="global-volume-btn"
+                class="global-volume-btn"
+                aria-label="Toggle master volume"
+                title="Master volume"
+              >
+                <img
+                  id="global-volume-icon"
+                  src="{{ url_for('static', filename='icons/volume.png') }}"
+                  alt="Volume"
+                  class="global-volume-icon"
+                />
+              </button>
+              <div class="global-volume-dropdown" id="global-volume-dropdown">
+                <input
+                  id="global-volume"
+                  class="volume-slider global-slider"
+                  type="range"
+                  min="0"
+                  max="100"
+                  value="50"
+                  style="--slider-progress: 50%;"
+                />
+              </div>
             </div>
           </div>
 
@@ -335,6 +346,6 @@
       </div>
     </div>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="{{ url_for('static', filename='script.js') }}?v=1.0.2"></script>
   </body>
 </html>

@@ -1434,8 +1434,10 @@ class SoundManager {
   setupGlobalVolumeControl() {
     const globalSlider = document.getElementById("global-volume");
     const globalIcon = document.getElementById("global-volume-icon");
+    const globalBtn = document.getElementById("global-volume-btn");
+    const globalDropdown = document.getElementById("global-volume-dropdown");
 
-    if (!globalSlider || !globalIcon) return;
+    if (!globalSlider) return;
 
     this.globalVolume = globalSlider.value / 100;
     this.updateSliderProgress(globalSlider);
@@ -1444,21 +1446,68 @@ class SoundManager {
       this.globalVolume = e.target.value / 100;
       this.updateSliderProgress(e.target);
       this.updateAllVolumes();
-      globalIcon.style.opacity = this.globalVolume === 0 ? "0.5" : "1";
+      if (globalIcon) {
+        globalIcon.style.opacity = this.globalVolume === 0 ? "0.5" : "1";
+      }
     });
 
-    globalIcon.addEventListener("click", () => {
-      if (this.globalVolume > 0) {
-        this.previousVolume = this.globalVolume;
-        this.globalVolume = 0;
-        globalSlider.value = 0;
-      } else {
-        this.globalVolume = this.previousVolume || 0.5;
-        globalSlider.value = this.globalVolume * 100;
+    const toggleButton = globalBtn || globalIcon;
+
+    if (toggleButton) {
+      toggleButton.addEventListener("click", (e) => {
+        const isMobile = window.innerWidth <= 1024;
+
+        if (isMobile && globalDropdown) {
+          e.stopPropagation();
+          const isOpen = globalDropdown.classList.contains("show");
+          if (isOpen) {
+            globalDropdown.classList.remove("show");
+          } else {
+            globalDropdown.classList.add("show");
+          }
+        } else {
+          // Desktop behavior: click icon to mute / unmute
+          if (this.globalVolume > 0) {
+            this.previousVolume = this.globalVolume;
+            this.globalVolume = 0;
+            globalSlider.value = 0;
+          } else {
+            this.globalVolume = this.previousVolume || 0.5;
+            globalSlider.value = this.globalVolume * 100;
+          }
+          this.updateSliderProgress(globalSlider);
+          this.updateAllVolumes();
+          if (globalIcon) {
+            globalIcon.style.opacity = this.globalVolume === 0 ? "0.5" : "1";
+          }
+        }
+      });
+    }
+
+    // Close mobile volume dropdown when clicking outside
+    document.addEventListener("click", (e) => {
+      if (
+        globalDropdown &&
+        globalDropdown.classList.contains("show") &&
+        !globalDropdown.contains(e.target) &&
+        (!toggleButton || !toggleButton.contains(e.target))
+      ) {
+        globalDropdown.classList.remove("show");
       }
-      this.updateSliderProgress(globalSlider);
-      this.updateAllVolumes();
-      globalIcon.style.opacity = this.globalVolume === 0 ? "0.5" : "1";
+    });
+
+    // Close on Escape key
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && globalDropdown) {
+        globalDropdown.classList.remove("show");
+      }
+    });
+
+    // Handle window resize
+    window.addEventListener("resize", () => {
+      if (window.innerWidth > 1024 && globalDropdown) {
+        globalDropdown.classList.remove("show");
+      }
     });
   }
 
@@ -1520,6 +1569,23 @@ class SoundManager {
     });
   }
 
+  updateCarouselCardWidth() {
+    const carousel = document.querySelector(".playlist-carousel");
+    if (!carousel) return;
+
+    if (window.innerWidth <= 600) {
+      const containerWidth = carousel.clientWidth;
+      const gap = window.innerWidth <= 360 ? 8 : 10;
+      const padding = 8; // 4px left + 4px right padding on .playlist-carousel
+      const cardWidth = Math.floor((containerWidth - padding - gap) / 2);
+      if (cardWidth > 60) {
+        carousel.style.setProperty("--card-width", `${cardWidth}px`);
+      }
+    } else {
+      carousel.style.removeProperty("--card-width");
+    }
+  }
+
   setupCarousel() {
     const scrollLeftBtn = document.getElementById("scroll-left");
     const scrollRightBtn = document.getElementById("scroll-right");
@@ -1527,12 +1593,24 @@ class SoundManager {
 
     if (!scrollLeftBtn || !scrollRightBtn || !carousel) return;
 
-    const SCROLL_AMOUNT = 160; // fixed step in px — one card width approx
+    this.updateCarouselCardWidth();
+
+    const getScrollStep = () => {
+      const card = carousel.querySelector(".playlist-card");
+      if (card) {
+        const cardWidth = card.offsetWidth;
+        const grid = document.getElementById("playlist-grid");
+        const gap = grid ? parseFloat(window.getComputedStyle(grid).gap) || 10 : 10;
+        return (cardWidth + gap) * 2;
+      }
+      return 240;
+    };
 
     scrollLeftBtn.addEventListener("click", () => {
       if (scrollLeftBtn.disabled) return;
       // Clamp: never go below 0
-      const target = Math.max(0, carousel.scrollLeft - SCROLL_AMOUNT);
+      const step = getScrollStep();
+      const target = Math.max(0, carousel.scrollLeft - step);
       carousel.scrollTo({ left: target, behavior: "smooth" });
       // Update after animation (~400ms)
       setTimeout(() => this.updateCarouselButtons(), 420);
@@ -1542,7 +1620,8 @@ class SoundManager {
       if (scrollRightBtn.disabled) return;
       const maxScroll = carousel.scrollWidth - carousel.clientWidth;
       // Clamp: never go past the end
-      const target = Math.min(maxScroll, carousel.scrollLeft + SCROLL_AMOUNT);
+      const step = getScrollStep();
+      const target = Math.min(maxScroll, carousel.scrollLeft + step);
       carousel.scrollTo({ left: target, behavior: "smooth" });
       // Update after animation (~400ms)
       setTimeout(() => this.updateCarouselButtons(), 420);
@@ -1556,11 +1635,15 @@ class SoundManager {
     });
 
     window.addEventListener("resize", () => {
+      this.updateCarouselCardWidth();
       this.updateCarouselButtons();
     });
 
     // Initial state — delay to ensure DOM is fully laid out
-    setTimeout(() => this.updateCarouselButtons(), 150);
+    setTimeout(() => {
+      this.updateCarouselCardWidth();
+      this.updateCarouselButtons();
+    }, 150);
   }
 
   updateCarouselButtons() {
@@ -1689,6 +1772,7 @@ class SoundManager {
     );
 
     setTimeout(() => {
+      this.updateCarouselCardWidth();
       this.updateCarouselButtons();
     }, 100);
   }
@@ -2196,10 +2280,47 @@ function setupPasswordToggles() {
   });
 }
 
+function setupDemoLoginBehavior() {
+  // If user is currently logged in, record that demo login is completed
+  if (document.body.dataset.userLoggedIn === "true") {
+    localStorage.setItem("calmflow_demo_completed", "true");
+  }
+
+  const loginForm = document.querySelector(".login-form");
+  if (!loginForm) return;
+
+  const demoToast = document.getElementById("demo-toast");
+
+  // If user has logged in previously, clear demo prefill and remove toast
+  if (localStorage.getItem("calmflow_demo_completed") === "true") {
+    if (demoToast) {
+      demoToast.remove();
+    }
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    if (emailInput && emailInput.value === "test@example.com") {
+      emailInput.value = "";
+    }
+    if (passwordInput && passwordInput.value === "password123") {
+      passwordInput.value = "";
+    }
+  }
+
+  // When submitting login form, immediately dismiss demo toast
+  loginForm.addEventListener("submit", () => {
+    if (demoToast) {
+      demoToast.style.opacity = "0";
+      demoToast.style.transform = "translateY(-10px)";
+      setTimeout(() => demoToast.remove(), 250);
+    }
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   console.log("🚀 Calm Flow initializing...");
   window.soundManager = new SoundManager();
   setupToasts();
   setupPasswordToggles();
+  setupDemoLoginBehavior();
   console.log("🎉 Calm Flow ready!");
 });
