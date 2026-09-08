@@ -23,6 +23,11 @@ def get_user_playlist_or_403(playlist_id, user_id):
 
 # --- ROUTES ---
 
+@app.route('/ping', methods=['GET', 'HEAD'])
+def ping():
+    """Lightweight ping endpoint for uptime monitors to prevent cold starts without hitting database"""
+    return jsonify({'status': 'ok'}), 200
+
 @app.route('/')
 def index():
     # Eager-load sounds and groups in a single optimized query
